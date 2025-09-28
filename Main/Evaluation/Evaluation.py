@@ -10,7 +10,7 @@ class Evaluation:
         self.coop_rates_over_time = {}
         self.rewards_over_time = {}
 
-    def record(self, agents_strategies: dict, match_num: int):  # NEU: match_num wird übergeben
+    def record(self, agents_strategies: dict, match_num: int):  # match_num wird übergeben
         """
         Speichert die Statistiken der Agenten zusammen mit dem Zeitstempel (match_num).
         """

@@ -1,17 +1,16 @@
 import numpy as np
 import random
 
-from Main.Agenten.QLearningAgent import QLearningAgent
+from Main.Agenten.Enums.PureStrategy import PureStrategy
 from Main.Agenten.PureAgent import PureAgent
+from Main.Agenten.QLearningAgent import QLearningAgent
 from Main.Agenten.SARSAAgent import SARSAAgent
-from Main.Agenten.WoLF_PHC_Agent import WoLFPHC
 from Main.Evaluation.Evaluation import Evaluation
 from Main.IGD_Setup.IPDEnv import IPDEnv
-from Main.Spielfelder.MatchmakingScheme import RandomPairingScheme
-from Main.IGD_Setup.IPDEnv import _ipd_payoff
+from Main.SimulationManager import calculate_max_reward, print_results
+from Main.Spielfelder.MatchmakingScheme import SpatialGridScheme, calculate_grid_size
 
-
-# Initial strategies
+# === INITIAL STRATEGIES FOR AGENTS ===
 
 # TitForTat
 q_table_titfortat = [
@@ -36,8 +35,9 @@ q_table_titfortat = np.array(q_table_titfortat, dtype=float)
 # === SIMULATION SETUP ===
 
 num_matches = 50
-num_episodes_per_match = 5
+num_episodes_per_match = 2
 num_rounds_per_episode = 1000
+max_reward = calculate_max_reward(num_matches, num_episodes_per_match, num_rounds_per_episode)
 
 SEED = 5
 random.seed(SEED)
@@ -45,27 +45,36 @@ np.random.seed(SEED)
 
 evaluation = Evaluation()
 
-def calculate_max_reward():
-    # 1: Defect, 0: Cooperate. Somit bekommt die Variable a1 den Temptation payoff, also das Maximum
-    a1, a2 = _ipd_payoff(1, 0)
-    return num_matches * num_episodes_per_match * num_rounds_per_episode * a1
-
-# Initialisiere das Matchmaking-Schema
-scheme = RandomPairingScheme()
-
-# Erstelle einen Pool mit verschiedenen Agenten
+# === INITIALISIERE AGENTENPOOL ===
 agent_pool = [
     QLearningAgent(),
     QLearningAgent(),
     QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
     SARSAAgent(),
     SARSAAgent(),
     SARSAAgent(),
-    #PureAgent(strategy_type="TitForTat"),
-    #PureAgent(strategy_type="AlwaysDefect")
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.ALWAYSDEFECT)
 ]
+
 for agent in agent_pool:
     agent.reset_stats()
+
+# === INITIALISIERE MATCHMAKING-SCHEMA ===
+
+# Random pairing scheme
+#scheme = RandomPairingScheme()
+
+# Spatial Grid Scheme
+scheme = SpatialGridScheme()
+GRID_SIZE = calculate_grid_size(len(agent_pool))
+grid = np.array(agent_pool).reshape(GRID_SIZE)
 
 # === SIMULATIONS-SCHLEIFE ===
 
@@ -74,7 +83,8 @@ print("Starte Simulation mit dynamischem Matchmaking...")
 for match_num in range(num_matches):
 
     # === 1. PAARUNGSPHASE ===
-    agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool)
+    #agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool) # RandomPairingScheme takes agent_pool
+    agent_p1, agent_p2 = scheme.choose_agent_pair(grid) # SpatialGridScheme takes grid
     agent_map = {"player_1": agent_p1, "player_2": agent_p2}
 
     print(f"\n--- Match {match_num + 1}/{num_matches}: {agent_p1.id} vs. {agent_p2.id} ---")
@@ -127,36 +137,17 @@ for match_num in range(num_matches):
     results = {}
     for agent in [agent_p1, agent_p2]:
         results[agent.id] = {
-            "pi": agent.get_policy().flatten().tolist(),  # Strategievektor
+            "pi": agent.get_policy().flatten().tolist(),
             "coop_rate": agent.get_cooperation_rate() * 100,
             "reward": agent.get_total_reward()
         }
     evaluation.record(results, match_num)
 
-    #print(f"\n--- Strategie für {agent_p1.id} ---")
-    #print(agent_p1.format_strategy_vector(agent_p1.get_policy()))
-    #print(f"Kooperationsrate: {agent_p1.get_cooperation_rate():.2%}")
-    #print(f"Total Reward: {agent_p1.get_total_reward()}/{calculate_max_reward()}")
-
-    #print(f"\n--- Strategie für {agent_p2.id} ---")
-    #print(agent_p2.format_strategy_vector(agent_p2.get_policy()))
-    #print(f"Kooperationsrate: {agent_p2.get_cooperation_rate():.2%}")
-    #print(f"Total Reward: {agent_p2.get_total_reward()}/{calculate_max_reward()}")
-
 print("\n++++++Simulation beendet.++++++")
 
 # === FINALE ANALYSE ===
 print("\n--- Finale Strategien der Agenten im Pool ---")
-for agent in agent_pool:
-    # Wir müssen prüfen, ob der Agent eine 'get_policy' Methode hat, die eine Matrix zurückgibt
-    if isinstance(agent, (QLearningAgent, SARSAAgent, WoLFPHC)):
-        #print(np.round(agent.get_policy(), 2))
-        print(f"\n--- Strategie für {agent.id} ---")
-        print(agent.format_strategy_vector(agent.get_policy()))
-        print(f"Kooperationsrate: {agent.get_cooperation_rate():.2%}")
-        print(f"Total Reward: {agent.get_total_reward()}/{calculate_max_reward()}")
-    else:
-        print("Agent ist kein bekannter Agententyp")
+print_results(agent_pool, max_reward)
 
 # === VISUALISIERUNG ===
 evaluation.plot_strategies()

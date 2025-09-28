@@ -1,5 +1,7 @@
 import numpy as np
 from Main.Agenten.BaseAgent import BaseAgent
+from Main.IGD_Setup.Action import Action
+
 
 # Behavioural/Target Policy: Softmax
 
@@ -50,10 +52,10 @@ class SARSAAgent(BaseAgent):
         Selects an action with Softmax Policy based on Q values
         """
         probs = self._softmax(self.q_table[observation])
-        action = np.random.choice(self.n_actions, p=probs)
-        return action
+        action_index = np.random.choice(self.n_actions, p=probs)
+        return Action(action_index)
 
-    def optimize(self, obs, action, reward, next_obs, next_action, done):
+    def optimize(self, obs: int, action: int, reward: float, next_obs: int, next_action: int, done: bool):
         """
         Performs a SARSA update
         """
@@ -83,9 +85,9 @@ class SARSAAgent(BaseAgent):
             # Get the next_action from the next experience
             _, next_action, _, _, _ = experience_buffer[i + 1]
 
-            self.optimize(obs, action, reward, next_obs, next_action, done)
+            self.optimize(obs, action.value, reward, next_obs, next_action.value, done)
 
         # Handle the last experience
         if experience_buffer:
             obs, action, reward, next_obs, done = experience_buffer[-1]
-            self.optimize(obs, action, reward, next_obs, None, done)
+            self.optimize(obs, action.value, reward, next_obs, None, done)

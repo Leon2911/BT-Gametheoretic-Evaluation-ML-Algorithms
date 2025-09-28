@@ -3,6 +3,27 @@ from abc import ABC
 from Main.IGD_Setup.Action import Action
 
 
+def format_strategy_vector(strategy_matrix):
+    """
+    Converts a 4x2 strategy matrix into a mixed strategy vector
+    that indicates the probability of cooperation in each state.
+    """
+    # Extract the probabilities for cooperation (column 0)
+    p_c_given_cc = strategy_matrix[0, 0]
+    p_c_given_cd = strategy_matrix[1, 0]
+    p_c_given_dc = strategy_matrix[2, 0]
+    p_c_given_dd = strategy_matrix[3, 0]
+
+    # Format the output string with 2 decimal places
+    vector_string = (
+        f"π = ({p_c_given_cc:.2f}, "
+        f"{p_c_given_cd:.2f}, "
+        f"{p_c_given_dc:.2f}, "
+        f"{p_c_given_dd:.2f})"
+    )
+
+    return vector_string
+
 class BaseAgent(ABC):
     next_id = 0
 
@@ -42,7 +63,7 @@ class BaseAgent(ABC):
     def log_action(self, action):
         """Protokolliert eine ausgeführte Aktion für die Statistik."""
         self.action_count += 1
-        if action == 0: # 0 = Cooperate
+        if action == Action.COOPERATE:
             self.cooperation_count += 1
 
     def get_cooperation_rate(self):
@@ -50,25 +71,4 @@ class BaseAgent(ABC):
         if self.action_count == 0:
             return 0.0  # Prevents division by zero
         return self.cooperation_count / self.action_count
-
-    def format_strategy_vector(self, strategy_matrix):
-        """
-        Converts a 4x2 strategy matrix into a mixed strategy vector
-        that indicates the probability of cooperation in each state.
-        """
-        # Extract the probabilities for cooperation (column 0)
-        p_c_given_cc = strategy_matrix[0, 0]
-        p_c_given_cd = strategy_matrix[1, 0]
-        p_c_given_dc = strategy_matrix[2, 0]
-        p_c_given_dd = strategy_matrix[3, 0]
-
-        # Format the output string with 2 decimal places
-        vector_string = (
-            f"π = ({p_c_given_cc:.2f}, "
-            f"{p_c_given_cd:.2f}, "
-            f"{p_c_given_dc:.2f}, "
-            f"{p_c_given_dd:.2f})"
-        )
-
-        return vector_string
 
