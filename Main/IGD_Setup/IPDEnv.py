@@ -14,15 +14,15 @@ def _ipd_payoff(a1: Action, a2: Action) -> tuple[int, int]:
         return 0, 5
     elif a1 == Action.DEFECT and a2 == Action.COOPERATE:
         return 5, 0
-    else:  # Action.DEFECT, Action.DEFECT
+    else:  # Action.DEFECT and Action.DEFECT
         return 1, 1
 
 
+# HILFSFUNKTIONEN
+
 def _encode_observation(p1_action: Action, p2_action: Action) -> int:
     """Kodiert das Ergebnis der letzten Runde aus der Ich-Perspektive."""
-    # Verwendet intern .value für die mathematische Berechnung
     return p1_action.value * 2 + p2_action.value
-
 
 # ---------------------------------------------------------------------------
 

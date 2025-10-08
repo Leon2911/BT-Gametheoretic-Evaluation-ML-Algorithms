@@ -5,14 +5,22 @@ from Main.IGD_Setup.Action import Action
 
 def format_strategy_vector(strategy_matrix):
     """
-    Converts a 4x2 strategy matrix into a mixed strategy vector
-    that indicates the probability of cooperation in each state.
+    Konvertiert eine Strategie (egal ob 4x2 Matrix oder 4er Vektor)
+    in einen lesbaren String, der die Kooperationswahrscheinlichkeit anzeigt.
     """
-    # Extract the probabilities for cooperation (column 0)
-    p_c_given_cc = strategy_matrix[0, 0]
-    p_c_given_cd = strategy_matrix[1, 0]
-    p_c_given_dc = strategy_matrix[2, 0]
-    p_c_given_dd = strategy_matrix[3, 0]
+
+    # Prüfe, ob die übergebene Policy eine 2D-Matrix ist (von QL/SARSA)
+    if strategy_matrix.ndim == 2:
+        # Extrahiere die erste Spalte (Kooperations-Wahrscheinlichkeiten)
+        coop_vector = strategy_matrix[:, 0]
+    else:
+        # Die Policy ist bereits der korrekte 1D-Vektor (von PureAgent)
+        coop_vector = strategy_matrix
+
+    p_c_given_cc = coop_vector[0]
+    p_c_given_cd = coop_vector[1]
+    p_c_given_dc = coop_vector[2]
+    p_c_given_dd = coop_vector[3]
 
     # Format the output string with 2 decimal places
     vector_string = (

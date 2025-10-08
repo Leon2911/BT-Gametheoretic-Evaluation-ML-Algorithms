@@ -8,7 +8,7 @@ from Main.Agenten.SARSAAgent import SARSAAgent
 from Main.Evaluation.Evaluation import Evaluation
 from Main.IGD_Setup.IPDEnv import IPDEnv
 from Main.SimulationManager import calculate_max_reward, print_results
-from Main.Spielfelder.MatchmakingScheme import SpatialGridScheme, calculate_grid_size
+from Main.Spielfelder.MatchmakingScheme import SpatialGridScheme, calculate_grid_size, RandomPairingScheme
 
 # === INITIAL STRATEGIES FOR AGENTS ===
 
@@ -34,12 +34,12 @@ q_table_titfortat = np.array(q_table_titfortat, dtype=float)
 
 # === SIMULATION SETUP ===
 
-num_matches = 50
-num_episodes_per_match = 2
-num_rounds_per_episode = 1000
+num_matches = 3000
+num_episodes_per_match = 1
+num_rounds_per_episode = 200
 max_reward = calculate_max_reward(num_matches, num_episodes_per_match, num_rounds_per_episode)
 
-SEED = 5
+SEED = 6
 random.seed(SEED)
 np.random.seed(SEED)
 
@@ -47,6 +47,36 @@ evaluation = Evaluation()
 
 # === INITIALISIERE AGENTENPOOL ===
 agent_pool = [
+    QLearningAgent(), #0
+    QLearningAgent(), #1
+    QLearningAgent(), #2
+    QLearningAgent(), #3
+    QLearningAgent(),  #4
+    QLearningAgent(), #5
+    QLearningAgent(), #6
+    QLearningAgent(), #7
+    QLearningAgent(), #8
+    QLearningAgent(),  #9
+    QLearningAgent(), #10
+    QLearningAgent(), #11
+    QLearningAgent(), #12
+    QLearningAgent(),  #13
+    QLearningAgent(), #14
+    QLearningAgent(), #15
+    SARSAAgent(), #16
+    SARSAAgent(), #17
+    SARSAAgent(), #18
+    SARSAAgent(), #19
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
     QLearningAgent(),
     QLearningAgent(),
     QLearningAgent(),
@@ -57,14 +87,182 @@ agent_pool = [
     SARSAAgent(),
     SARSAAgent(),
     SARSAAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
     SARSAAgent(),
     SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    QLearningAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    SARSAAgent(),
+    #PureAgent(strategy_type=PureStrategy.ALWAYSCOOPERATE),
+    #PureAgent(strategy_type=PureStrategy.ALWAYSDEFECT),
+    #PureAgent(strategy_type=PureStrategy.ALWAYSCOOPERATE),
+    #PureAgent(strategy_type=PureStrategy.ALWAYSDEFECT),
+    #PureAgent(strategy_type=PureStrategy.ALWAYSCOOPERATE),
+    #PureAgent(strategy_type=PureStrategy.ALWAYSDEFECT),
+    #PureAgent(strategy_type=PureStrategy.ALWAYSCOOPERATE),
+    #PureAgent(strategy_type=PureStrategy.ALWAYSDEFECT),
     #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.ALWAYSDEFECT)
-]
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
+    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
+]#
 
 for agent in agent_pool:
     agent.reset_stats()
+
+print("Speichere initialen Zustand der Agenten...")
+initial_results = {}
+for agent in agent_pool:
+    policy = agent.get_policy()
+    if policy.ndim == 2:
+        coop_policy_vector = policy[:, 0]
+    else:
+        coop_policy_vector = policy
+
+    initial_results[agent.id] = {
+        "pi": coop_policy_vector.tolist(),
+        "coop_rate": agent.get_cooperation_rate() * 100,
+        "reward": agent.get_total_reward()
+    }
+
+# Record the state before any matches have been played (at time t=-1)
+evaluation.record(initial_results, -1)
 
 # === INITIALISIERE MATCHMAKING-SCHEMA ===
 
@@ -72,9 +270,11 @@ for agent in agent_pool:
 #scheme = RandomPairingScheme()
 
 # Spatial Grid Scheme
-scheme = SpatialGridScheme()
+scheme = SpatialGridScheme(neighborhood_type="moore")
 GRID_SIZE = calculate_grid_size(len(agent_pool))
 grid = np.array(agent_pool).reshape(GRID_SIZE)
+
+#evaluation.record_replay_step(grid, active_players=(None, None))
 
 # === SIMULATIONS-SCHLEIFE ===
 
@@ -136,12 +336,19 @@ for match_num in range(num_matches):
     # Ergebnisse speichern für Evaluation
     results = {}
     for agent in [agent_p1, agent_p2]:
+        policy = agent.get_policy()
+        if policy.ndim == 2:
+            coop_policy_vector = policy[:, 0]
+        else:
+            coop_policy_vector = policy
         results[agent.id] = {
-            "pi": agent.get_policy().flatten().tolist(),
+            "pi": coop_policy_vector.tolist(),
             "coop_rate": agent.get_cooperation_rate() * 100,
             "reward": agent.get_total_reward()
         }
     evaluation.record(results, match_num)
+    evaluation.record_replay_step(grid, active_players=(agent_p1, agent_p2))
+    #print_results(agent_pool, max_reward)
 
 print("\n++++++Simulation beendet.++++++")
 
@@ -150,6 +357,8 @@ print("\n--- Finale Strategien der Agenten im Pool ---")
 print_results(agent_pool, max_reward)
 
 # === VISUALISIERUNG ===
-evaluation.plot_strategies()
-evaluation.plot_coop_rates()
-evaluation.plot_rewards()
+evaluation.plot_aggregated_strategies(agent_pool, num_matches)
+#evaluation.plot_strategies(agent_pool, num_matches)
+evaluation.plot_aggregated_coop_rates(agent_pool, num_matches)
+evaluation.plot_aggregated_rewards(agent_pool, num_matches)
+evaluation.render_interactive_grid_replay(cell_size=50)

@@ -11,7 +11,7 @@ from Main.IGD_Setup.Action import Action
 # TODO Since SARSA and Q-Learning are almost identical, maybe create a "QLearningBasedAgent-class" from which both inherit
 
 class QLearningAgent(BaseAgent):
-    def __init__(self, n_states=4, n_actions=2, alpha=0.1, gamma=0.95, temperature=1.0, q_table=None):
+    def __init__(self, n_states=4, n_actions=2, alpha=0.1, gamma=0.95, temperature=1, q_table=None):
         """
         Q-Learning agent with Softmax Policy
 
@@ -38,13 +38,14 @@ class QLearningAgent(BaseAgent):
         # Initializing Q-Table
         if q_table is None:
             self.q_table = np.zeros((n_states, n_actions), dtype=float) #Random start (50% Cooperate and 50 % Defect in every state)
+            #self.q_table = np.random.rand(n_states, n_actions) # Agenten starten mit mehr Vielfalt in ihrer Policy. Werte sind zwischen 0.0 und 1.0
         else:
-            self.q_table = q_table
+            self.q_table = q_table # Agenten nutzen die vom Nutzer übergebene initiale Q-Table (siehe Main.py)
 
 
     def _softmax(self, logits):
         """Auxiliary function: Softmax probabilities for a state vector"""
-        shifted = logits - np.max(logits)  # numerisch stabil
+        shifted = logits - np.max(logits)
         exp_vals = np.exp(shifted / self.temperature)
         return exp_vals / np.sum(exp_vals)
 

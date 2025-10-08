@@ -37,6 +37,7 @@ class SARSAAgent(BaseAgent):
         # Initializing Q-Table
         if q_table is None:
             self.q_table = np.zeros((n_states, n_actions), dtype=float)  # Random start (50% Cooperate and 50 % Defect in every state)
+            #self.q_table = np.random.rand(n_states, n_actions) # Agenten starten mit mehr Vielfalt in ihrer Policy. Werte sind zwischen 0.0 und 1.0
         else:
             self.q_table = q_table
 
