@@ -5,243 +5,138 @@ from Main.Agenten.Enums.PureStrategy import PureStrategy
 from Main.Agenten.PureAgent import PureAgent
 from Main.Agenten.QLearningAgent import QLearningAgent
 from Main.Agenten.SARSAAgent import SARSAAgent
-from Main.Evaluation.Evaluation import Evaluation
+from Main.Evaluation.Evaluation import Evaluation, log_simulation_parameters
 from Main.IGD_Setup.IPDEnv import IPDEnv
 from Main.SimulationManager import calculate_max_reward, print_results
 from Main.Spielfelder.MatchmakingScheme import SpatialGridScheme, calculate_grid_size, RandomPairingScheme
+
+# === SIMULATION SETUP ===
+
+# 1. Definiere alle Parameter an einem Ort
+LOG_FILE = "simulation_log.md"
+
+simulation_params = {
+    "num_matches": 3000,
+    "num_episodes_per_match": 1,
+    "num_rounds_per_episode": 200,
+    "seed": 6
+}
+
+# Definiere die Lern-Hyperparameter für die Protokollierung
+learning_params = {
+    "n_states": 4,
+    "n_actions": 2,
+    "alpha": 0.1,
+    "gamma": 0.95,
+    "temperature": 1.0,
+    #"temperature_decay": 0.999
+}
+
+num_matches = simulation_params["num_matches"]
+num_episodes_per_match = simulation_params["num_episodes_per_match"]
+num_rounds_per_episode = simulation_params["num_rounds_per_episode"]
+max_reward = calculate_max_reward(num_matches, num_episodes_per_match, num_rounds_per_episode)
+
+SEED = simulation_params["seed"]
+random.seed(SEED)
+np.random.seed(SEED)
+
+evaluation = Evaluation()
 
 # === INITIAL STRATEGIES FOR AGENTS ===
 
 # TitForTat
 q_table_titfortat = [
-    [9.0, 0.5],
-    [0.5, 9.0],
-    [9.0, 0.5],
-    [0.5, 9.0]
+    [9.0, 0.3],
+    [0.3, 9.0],
+    [9.0, 0.3],
+    [0.3, 9.0]
 ]
 
 # Start as Defector no matter what
 q_table_defector = [
-    [0.5, 9.0],
-    [0.5, 9.0],
-    [0.5, 9.0],
-    [0.5, 9.0]
+    [0.3, 9.0],
+    [0.3, 9.0],
+    [0.3, 9.0],
+    [0.3, 9.0]
 ]
 
 # Convert it to a NumPy array
 q_table_defector = np.array(q_table_defector, dtype=float)
 q_table_titfortat = np.array(q_table_titfortat, dtype=float)
 
-# === SIMULATION SETUP ===
-
-num_matches = 3000
-num_episodes_per_match = 1
-num_rounds_per_episode = 200
-max_reward = calculate_max_reward(num_matches, num_episodes_per_match, num_rounds_per_episode)
-
-SEED = 6
-random.seed(SEED)
-np.random.seed(SEED)
-
-evaluation = Evaluation()
-
 # === INITIALISIERE AGENTENPOOL ===
-agent_pool = [
-    QLearningAgent(), #0
-    QLearningAgent(), #1
-    QLearningAgent(), #2
-    QLearningAgent(), #3
-    QLearningAgent(),  #4
-    QLearningAgent(), #5
-    QLearningAgent(), #6
-    QLearningAgent(), #7
-    QLearningAgent(), #8
-    QLearningAgent(),  #9
-    QLearningAgent(), #10
-    QLearningAgent(), #11
-    QLearningAgent(), #12
-    QLearningAgent(),  #13
-    QLearningAgent(), #14
-    QLearningAgent(), #15
-    SARSAAgent(), #16
-    SARSAAgent(), #17
-    SARSAAgent(), #18
-    SARSAAgent(), #19
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    QLearningAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    SARSAAgent(),
-    #PureAgent(strategy_type=PureStrategy.ALWAYSCOOPERATE),
-    #PureAgent(strategy_type=PureStrategy.ALWAYSDEFECT),
-    #PureAgent(strategy_type=PureStrategy.ALWAYSCOOPERATE),
-    #PureAgent(strategy_type=PureStrategy.ALWAYSDEFECT),
-    #PureAgent(strategy_type=PureStrategy.ALWAYSCOOPERATE),
-    #PureAgent(strategy_type=PureStrategy.ALWAYSDEFECT),
-    #PureAgent(strategy_type=PureStrategy.ALWAYSCOOPERATE),
-    #PureAgent(strategy_type=PureStrategy.ALWAYSDEFECT),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-    #PureAgent(strategy_type=PureStrategy.TITFORTAT),
-    #PureAgent(strategy_type=PureStrategy.GRIMTRIGGER),
-]#
+
+agent_config = {
+    # Lernende Agenten
+    QLearningAgent: 100,
+    SARSAAgent: 100,
+
+    # QLearningAgenten, die mit einer starken Neigung zu Tit-for-Tat starten
+    "QLearning_TFT_Starter": {
+        "class": QLearningAgent,
+        "count": 0,
+        "params": {"q_table": q_table_titfortat}
+    },
+
+    # QLearningAgenten, die mit einer starken Neigung zu Tit-for-Tat starten
+    "QLearning_Defector_Starter": {
+        "class": QLearningAgent,
+        "count": 0,
+        "params": {"q_table": q_table_defector}
+    },
+
+    # SARSAAgenten, die ebenfalls mit einer Neigung zu Tit-for-Tat starten
+    "SARSA_TFT_Starter": {
+        "class": SARSAAgent,
+        "count": 0,
+        "params": {"q_table": q_table_titfortat}
+    },
+
+    # SARSAAgenten, die als Defektoren starten
+    "SARSA_Defector_Starter": {
+        "class": SARSAAgent,
+        "count": 0,
+        "params": {"q_table": q_table_defector}
+    },
+
+    # Reine Strategen mit Parametern
+    "TitForTat": {
+        "class": PureAgent,
+        "count": 0,
+        "params": {"strategy_type": PureStrategy.TITFORTAT}
+    },
+    "AlwaysDefect": {
+        "class": PureAgent,
+        "count": 0,
+        "params": {"strategy_type": PureStrategy.ALWAYSDEFECT}
+    },
+
+    "GrimTrigger": {
+        "class": PureAgent,
+        "count": 0,
+        "params": {"strategy_type": PureStrategy.GRIMTRIGGER}
+    },
+}
+
+agent_pool = []
+for agent_class, config in agent_config.items():
+    # Prüfe, ob die Konfiguration detaillierter ist (in einem Dictionary)
+    if isinstance(config, dict):
+        agent_class_ref = config["class"]
+        count = config["count"]
+        params = config.get("params", {})  # .get() um Parameter optional zu machen
+
+        for _ in range(count):
+            # Erstelle die Agenten-Instanz mit den übergebenen Parametern
+            agent_pool.append(agent_class_ref(**params))
+
+    else:  # Einfache Konfiguration (nur Anzahl)
+        count = config
+        for _ in range(count):
+            agent_pool.append(agent_class())
+
+
 
 for agent in agent_pool:
     agent.reset_stats()
@@ -276,9 +171,21 @@ grid = np.array(agent_pool).reshape(GRID_SIZE)
 
 #evaluation.record_replay_step(grid, active_players=(None, None))
 
+# === SIMULATIONS-PARAMETER LOGGEN ===
+all_params = {
+    "scheme_type": scheme.__class__.__name__,
+    "grid_size": GRID_SIZE if isinstance(scheme, SpatialGridScheme) else "N/A",
+    **simulation_params, # Fügt alle Werte aus simulation_params hinzu
+    "agent_config": agent_config,
+    "learning_params": learning_params
+}
+
+log_simulation_parameters(LOG_FILE, all_params)
+
 # === SIMULATIONS-SCHLEIFE ===
 
 print("Starte Simulation mit dynamischem Matchmaking...")
+print(f"")
 
 for match_num in range(num_matches):
 
@@ -287,7 +194,7 @@ for match_num in range(num_matches):
     agent_p1, agent_p2 = scheme.choose_agent_pair(grid) # SpatialGridScheme takes grid
     agent_map = {"player_1": agent_p1, "player_2": agent_p2}
 
-    print(f"\n--- Match {match_num + 1}/{num_matches}: {agent_p1.id} vs. {agent_p2.id} ---")
+    #print(f"\n--- Match {match_num + 1}/{num_matches}: {agent_p1.id} vs. {agent_p2.id} ---")
 
     experience_buffers = {"player_1": [], "player_2": []}
 
@@ -313,7 +220,8 @@ for match_num in range(num_matches):
             done = any(terminations.values()) or any(truncations.values())
 
             for agent_id in env.agents:
-                agent_map[agent_id].receive_reward(rewards[agent_id])
+                own_action = actions[agent_id]
+                agent_map[agent_id].receive_reward(rewards[agent_id], own_action)
 
                 experience = (
                     observations[agent_id],
@@ -328,10 +236,13 @@ for match_num in range(num_matches):
         env.close()
 
     # === 3. LERNPHASE (Batch-Update nach dem Match) ===
-    print(f"++++++Match beendet. {agent_p1.id} und {agent_p2.id} lernen jetzt...++++++")
+    #print(f"++++++Match beendet. {agent_p1.id} und {agent_p2.id} lernen jetzt...++++++")
 
     agent_p1.train(experience_buffers["player_1"])
     agent_p2.train(experience_buffers["player_2"])
+
+    agent_p1.log_match_played()
+    agent_p2.log_match_played()
 
     # Ergebnisse speichern für Evaluation
     results = {}

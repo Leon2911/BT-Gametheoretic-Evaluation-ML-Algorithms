@@ -97,7 +97,7 @@ class SpatialGridScheme(MatchmakingScheme):
                     matches.append((current_agent, neighbor_agent))
 
         # Mische die Liste, damit die Reihenfolge der Duelle zufällig ist
-        #random.shuffle(matches)
+        random.shuffle(matches)
         self.match_queue = matches
 
     def choose_agent_pair(self, grid: np.ndarray) -> Tuple:

@@ -1,7 +1,9 @@
+import datetime
 from copy import deepcopy
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 from collections import defaultdict
 
 import pygame
@@ -120,6 +122,66 @@ def _group_by_type(data_dict, agent_pool):
         grouped_data[agent_type].append(history)
 
     return grouped_data
+
+def log_simulation_parameters(filepath: str, params: dict):
+    """
+    Protokolliert alle Simulationsparameter auf der Konsole und in einer persistenten Datei.
+
+    Args:
+        filepath (str): Der Pfad zur Log-Datei (z.B. "simulation_log.md").
+        params (dict): Ein Dictionary, das alle relevanten Parameter enthält.
+    """
+    # 1. Zeitstempel für diesen Simulationslauf erstellen
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # 2. Den Log-Eintrag als formatierten String (Markdown) erstellen
+    log_entry = f"## Simulationslauf vom: {timestamp}\n\n"
+
+    # Globale Simulations-Parameter
+    log_entry += "### Globale Parameter\n"
+    log_entry += f"- **Begegnungsschema:** `{params['scheme_type']}`\n"
+    if 'grid_size' in params:
+        log_entry += f"- **Gittergröße:** `{params['grid_size']}`\n"
+    log_entry += f"- **Anzahl Matches/Duelle:** `{params['num_matches']}`\n"
+    log_entry += f"- **Runden pro Episode:** `{params['num_rounds_per_episode']}`\n"
+    log_entry += f"- **Zufalls-Seed:** `{params['seed']}`\n\n"
+
+    # Agenten-Population
+    log_entry += "### Agenten-Population\n"
+    total_agents = 0
+    for agent_key, config in params['agent_config'].items():
+        if isinstance(config, dict):
+            count = config['count']
+            agent_name = agent_key
+        else:
+            count = config
+            agent_name = agent_key.__name__
+
+        if count > 0:
+            log_entry += f"- **{agent_name}:** `{count}`\n"
+            total_agents += count
+    log_entry += f"- **Gesamt:** `{total_agents}` Agenten\n\n"
+
+    # Lern-Hyperparameter der lernenden Agenten
+    log_entry += "### Lern-Hyperparameter\n"
+    for key, value in params['learning_params'].items():
+        log_entry += f"- **{key}:** `{value}`\n"
+
+    log_entry += "\n---\n\n"  # Trennlinie für den nächsten Lauf
+
+    # 3. Den Log-Eintrag auf der Konsole ausgeben
+    print("--- START: Simulations-Parameter ---")
+    print(log_entry.replace("### ", "").replace("## ", ""))  # Ohne Markdown-Formatierung für die Konsole
+    print("--- ENDE: Simulations-Parameter ---")
+
+    # 4. Den Log-Eintrag an die Datei anhängen
+    try:
+        with open(filepath, 'a', encoding='utf-8') as f:
+            f.write(log_entry)
+    except IOError as e:
+        print(f"Fehler beim Schreiben der Log-Datei: {e}")
+
+
 
 class Evaluation:
 
@@ -372,10 +434,10 @@ class Evaluation:
         title_space = 25
         label_space = 20
         spacing_between_heatmaps = 40
+        spacing_between_bottom = 10
 
         left_panel_width = heatmap_width + 50  # 10px Rand + 40px für die Legende
-        left_panel_height = (
-                                        heatmap_height + colorbar_height + title_space + label_space) * 2 + spacing_between_heatmaps
+        left_panel_height = (heatmap_height + colorbar_height + title_space + label_space) * 3 + spacing_between_heatmaps + spacing_between_bottom
 
         grid_panel_width = grid_shape[1] * cell_size
         grid_panel_height = grid_shape[0] * cell_size
@@ -443,15 +505,25 @@ class Evaluation:
             self._draw_horizontal_colorbar(screen, plt.get_cmap('RdYlGn'), heatmap_x, coop_heatmap_y, heatmap_width,
                                            colorbar_height, "Kooperationsrate", "0%", "100%")
             self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
-                               coop_heatmap_y + title_space + label_space, 'cooperation_rate')
+                               coop_heatmap_y + title_space + label_space, 'cooperation_rate', 'RdYlGn')
 
             # --- Reward-Heatmap ---
             reward_heatmap_y = coop_heatmap_y + heatmap_height + spacing_between_heatmaps + title_space + label_space
 
             min_r, max_r = self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
-                                              reward_heatmap_y + title_space + label_space, 'total_reward')
+                                              reward_heatmap_y + title_space + label_space, 'total_reward_mean', 'RdYlGn')
             self._draw_horizontal_colorbar(screen, plt.get_cmap('RdYlGn'), heatmap_x, reward_heatmap_y, heatmap_width,
-                                           colorbar_height, "Total Reward", f"{min_r:.0f}", f"{max_r:.0f}")
+                                           colorbar_height, "Total Reward Mean", f"{min_r:.0f}", f"{max_r:.0f}")
+
+            # --- Kooperations-Payoff-Index Heatmap (links unten) ---
+            payoff_heatmap_y = reward_heatmap_y + heatmap_height + spacing_between_heatmaps + title_space + label_space
+            min_p, max_p = self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
+                                              payoff_heatmap_y + title_space + label_space, 'strategic_cooperation_advantage', 'coolwarm_r')
+            # Verwendung einer divergierende Colormap von Rot nach Blau
+            self._draw_horizontal_colorbar(screen, plt.get_cmap('coolwarm_r'), heatmap_x, payoff_heatmap_y,
+                                           heatmap_width, colorbar_height, "Strateg. Koop.-Vorteil", f"{min_p:.1f}",
+                                           f"{max_p:.1f}")
+
 
             # Panel 2: Gitter der Strategietypen (Mitte)
             grid_x_start = left_panel_width
@@ -474,6 +546,7 @@ class Evaluation:
             # Panel 3: Strategie-Liste (Rechts)
             panel_x_start = left_panel_width + grid_panel_width
             self._draw_strategy_panel(screen, font, grid_to_draw, panel_x_start, scroll_offset)
+
 
             # Info-Leiste (Unten)
             step_text = f"Match: {current_step}/{len(self.replay_history) - 1}"
@@ -539,12 +612,12 @@ class Evaluation:
             scrollbar_y = y_start + (scroll_offset / total_content_height) * (panel_rect.height - y_start)
             pygame.draw.rect(screen, (80, 80, 80), (screen.get_width() - 10, scrollbar_y, 8, scrollbar_height))
 
-    def _draw_heatmap(self, screen, grid, cell_size, x_offset, y_offset, data_type: str):
+    def _draw_heatmap(self, screen, grid, cell_size, x_offset, y_offset, data_type: str, cmap_name: str, max_reward_possible: float = 0):
         """
         Zeichnet eine Heatmap für einen gegebenen Datentyp ('cooperation_rate' oder 'total_reward').
         Gibt die Min/Max-Werte für die Legende zurück.
         """
-        cmap = plt.get_cmap('RdYlGn')
+        cmap = plt.get_cmap(cmap_name)
         grid_shape = grid.shape
 
         # Baue den korrekten Methodennamen zusammen (z.B. 'get_cooperation_rate')
@@ -555,15 +628,24 @@ class Evaluation:
         if not agent_data:
             return 0, 0
 
-        # Bestimme Min/Max-Werte für die Normalisierung der Farben
-        if data_type == 'cooperation_rate':
-            min_val, max_val = 0.0, 1.0  # Feste Skala von 0% bis 100%
-        else:  # Für 'total_reward' oder andere Werte
-            min_val, max_val = min(agent_data), max(agent_data)
+        # Bestimme Min/Max-Werte der aktuellen Daten
+        min_val, max_val = min(agent_data), max(agent_data)
 
-        val_range = max_val - min_val
-        if val_range == 0:
-            val_range = 1  # Verhindert Division durch Null
+        # Logik für die Normalisierung
+        if data_type == 'cooperation_rate':
+            # Feste Skala von 0 bis 1
+            norm = mcolors.Normalize(vmin=0.0, vmax=1.0)
+        elif data_type == 'total_reward':
+            # Feste Skala von 0 bis zum theoretischen Maximum
+            norm = mcolors.Normalize(vmin=0.0, vmax=max_reward_possible)
+        elif data_type == 'cooperation_payoff_index':
+            # Divergierende Skala mit Zentrum bei 0
+            # Finde den größten Abstand von Null, um die Skala symmetrisch zu machen
+            abs_max = max(abs(min_val), abs(max_val))
+            if abs_max == 0: abs_max = 1 # Verhindere eine Skala von [-0, 0]
+            norm = mcolors.TwoSlopeNorm(vcenter=0, vmin=-abs_max, vmax=abs_max)
+        else: # Fallback für andere Daten
+            norm = mcolors.Normalize(vmin=min_val, vmax=max_val)
 
         for y in range(grid_shape[0]):
             for x in range(grid_shape[1]):
@@ -573,7 +655,7 @@ class Evaluation:
                 value = getattr(agent, method_name)()
 
                 # Normalisiere den Wert auf einen Bereich von 0.0 bis 1.0 für die Colormap
-                normalized_val = (value - min_val) / val_range
+                normalized_val = norm(value)
 
                 color_rgba = cmap(normalized_val)
                 color_rgb = tuple(int(val * 255) for val in color_rgba[:3])

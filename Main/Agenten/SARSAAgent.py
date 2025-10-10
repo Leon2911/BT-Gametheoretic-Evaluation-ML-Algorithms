@@ -92,3 +92,12 @@ class SARSAAgent(BaseAgent):
         if experience_buffer:
             obs, action, reward, next_obs, done = experience_buffer[-1]
             self.optimize(obs, action.value, reward, next_obs, None, done)
+
+    def get_strategic_cooperation_advantage(self) -> float:
+        """
+        Berechnet den durchschnittlichen Vorteil von Kooperation über alle Zustände
+        basierend auf den gelernten Q-Werten.
+        """
+        # Q-Werte für Kooperation (Spalte 0) - Q-Werte für Defektion (Spalte 1)
+        advantages = self.q_table[:, 0] - self.q_table[:, 1]
+        return np.mean(advantages)

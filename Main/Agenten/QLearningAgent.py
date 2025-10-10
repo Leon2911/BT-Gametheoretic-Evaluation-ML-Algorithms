@@ -83,3 +83,12 @@ class QLearningAgent(BaseAgent):
         shape = (n_states, n_actions)
         """
         return np.vstack([self._softmax(self.q_table[s]) for s in range(self.n_states)])
+
+    def get_strategic_cooperation_advantage(self) -> float:
+        """
+        Berechnet den durchschnittlichen Vorteil von Kooperation über alle Zustände
+        basierend auf den gelernten Q-Werten.
+        """
+        # Q-Werte für Kooperation (Spalte 0) - Q-Werte für Defektion (Spalte 1)
+        advantages = self.q_table[:, 0] - self.q_table[:, 1]
+        return np.mean(advantages)
