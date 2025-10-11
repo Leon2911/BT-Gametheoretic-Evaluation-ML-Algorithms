@@ -147,16 +147,11 @@ def log_simulation_parameters(filepath: str, params: dict):
     log_entry += f"- **Zufalls-Seed:** `{params['seed']}`\n\n"
 
     # Agenten-Population
+    # Agenten-Population
     log_entry += "### Agenten-Population\n"
     total_agents = 0
-    for agent_key, config in params['agent_config'].items():
-        if isinstance(config, dict):
-            count = config['count']
-            agent_name = agent_key
-        else:
-            count = config
-            agent_name = agent_key.__name__
-
+    # Greife auf den neuen Schlüssel zu und iteriere über das einfache Counter-Objekt
+    for agent_name, count in params['population_composition'].items():
         if count > 0:
             log_entry += f"- **{agent_name}:** `{count}`\n"
             total_agents += count
@@ -536,7 +531,7 @@ class Evaluation:
                     pygame.draw.rect(screen, color, rect)
                     pygame.draw.rect(screen, (80, 80, 80), rect, 1)
                     # Agenten-ID zeichnen
-                    id_number = agent.id.replace("Agent", "")
+                    id_number = str(agent.numeric_id)
                     brightness = (color[0] * 299 + color[1] * 587 + color[2] * 114) / 1000
                     text_color = (0, 0, 0) if brightness > 128 else (255, 255, 255)
                     text_surface = id_font.render(id_number, True, text_color)

@@ -36,6 +36,8 @@ class BaseAgent(ABC):
     next_id = 0
 
     def __init__(self, name=None, initial_action=Action.COOPERATE, model=None):
+        self.numeric_id = BaseAgent.next_id
+
         self.id = f"Agent{BaseAgent.next_id}"
         BaseAgent.next_id += 1
         self.name = name if name is not None else self.id

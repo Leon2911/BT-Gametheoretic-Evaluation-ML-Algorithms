@@ -8,7 +8,10 @@ from Main.Agenten.SARSAAgent import SARSAAgent
 from Main.Evaluation.Evaluation import Evaluation, log_simulation_parameters
 from Main.IGD_Setup.IPDEnv import IPDEnv
 from Main.SimulationManager import calculate_max_reward, print_results
-from Main.Spielfelder.MatchmakingScheme import SpatialGridScheme, calculate_grid_size, RandomPairingScheme
+from Main.Matchmakingschemes.MatchmakingScheme import SpatialGridScheme, calculate_grid_size, RandomPairingScheme
+
+from Main.SimulationSetup import GridFactory
+from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION
 
 # === SIMULATION SETUP ===
 
@@ -43,100 +46,35 @@ np.random.seed(SEED)
 
 evaluation = Evaluation()
 
-# === INITIAL STRATEGIES FOR AGENTS ===
-
-# TitForTat
-q_table_titfortat = [
-    [9.0, 0.3],
-    [0.3, 9.0],
-    [9.0, 0.3],
-    [0.3, 9.0]
-]
-
-# Start as Defector no matter what
-q_table_defector = [
-    [0.3, 9.0],
-    [0.3, 9.0],
-    [0.3, 9.0],
-    [0.3, 9.0]
-]
-
-# Convert it to a NumPy array
-q_table_defector = np.array(q_table_defector, dtype=float)
-q_table_titfortat = np.array(q_table_titfortat, dtype=float)
 
 # === INITIALISIERE AGENTENPOOL ===
 
-agent_config = {
-    # Lernende Agenten
-    QLearningAgent: 100,
-    SARSAAgent: 100,
+# 1. Definiere die Gesamt-Zusammensetzung deiner Welt
+total_composition = {
+    'QL': 182,
+    'QL_TFT': 9, # 18 für die Cluster + 2 extra
+    'QL_AD': 9,
+} # Gesamt: 160 Agenten
 
-    # QLearningAgenten, die mit einer starken Neigung zu Tit-for-Tat starten
-    "QLearning_TFT_Starter": {
-        "class": QLearningAgent,
-        "count": 0,
-        "params": {"q_table": q_table_titfortat}
+# 2. Definiere die "Spezialanweisungen" für die Cluster-Platzierung
+cluster_requests = [
+    {
+        'type': 'QL_TFT', # Agententyp des Clusters
+        'count': 1,        # Anzahl der zu erstellenden Cluster dieses Typs
+        'neighborhood': 'moore' # (Aktuell wird immer 3x3 platziert, aber gut für die Doku)
     },
+    {
+        'type': 'QL_AD',  # Agententyp des Clusters
+        'count': 1,  # Anzahl der zu erstellenden Cluster dieses Typs
+        'neighborhood': 'moore' # Art der Nachbarschaft
+    }
+]
 
-    # QLearningAgenten, die mit einer starken Neigung zu Tit-for-Tat starten
-    "QLearning_Defector_Starter": {
-        "class": QLearningAgent,
-        "count": 0,
-        "params": {"q_table": q_table_defector}
-    },
+layout_map = GridFactory.generate_layout_with_clusters(total_composition, cluster_requests)
+#layout_map = COOP_CORE_INVASION
 
-    # SARSAAgenten, die ebenfalls mit einer Neigung zu Tit-for-Tat starten
-    "SARSA_TFT_Starter": {
-        "class": SARSAAgent,
-        "count": 0,
-        "params": {"q_table": q_table_titfortat}
-    },
-
-    # SARSAAgenten, die als Defektoren starten
-    "SARSA_Defector_Starter": {
-        "class": SARSAAgent,
-        "count": 0,
-        "params": {"q_table": q_table_defector}
-    },
-
-    # Reine Strategen mit Parametern
-    "TitForTat": {
-        "class": PureAgent,
-        "count": 0,
-        "params": {"strategy_type": PureStrategy.TITFORTAT}
-    },
-    "AlwaysDefect": {
-        "class": PureAgent,
-        "count": 0,
-        "params": {"strategy_type": PureStrategy.ALWAYSDEFECT}
-    },
-
-    "GrimTrigger": {
-        "class": PureAgent,
-        "count": 0,
-        "params": {"strategy_type": PureStrategy.GRIMTRIGGER}
-    },
-}
-
-agent_pool = []
-for agent_class, config in agent_config.items():
-    # Prüfe, ob die Konfiguration detaillierter ist (in einem Dictionary)
-    if isinstance(config, dict):
-        agent_class_ref = config["class"]
-        count = config["count"]
-        params = config.get("params", {})  # .get() um Parameter optional zu machen
-
-        for _ in range(count):
-            # Erstelle die Agenten-Instanz mit den übergebenen Parametern
-            agent_pool.append(agent_class_ref(**params))
-
-    else:  # Einfache Konfiguration (nur Anzahl)
-        count = config
-        for _ in range(count):
-            agent_pool.append(agent_class())
-
-
+grid, agent_pool, agent_counts = GridFactory.create_from_layout(layout_map)
+GRID_SIZE = grid.shape
 
 for agent in agent_pool:
     agent.reset_stats()
@@ -166,8 +104,7 @@ evaluation.record(initial_results, -1)
 
 # Spatial Grid Scheme
 scheme = SpatialGridScheme(neighborhood_type="moore")
-GRID_SIZE = calculate_grid_size(len(agent_pool))
-grid = np.array(agent_pool).reshape(GRID_SIZE)
+
 
 #evaluation.record_replay_step(grid, active_players=(None, None))
 
@@ -176,7 +113,7 @@ all_params = {
     "scheme_type": scheme.__class__.__name__,
     "grid_size": GRID_SIZE if isinstance(scheme, SpatialGridScheme) else "N/A",
     **simulation_params, # Fügt alle Werte aus simulation_params hinzu
-    "agent_config": agent_config,
+    "population_composition": agent_counts,
     "learning_params": learning_params
 }
 
