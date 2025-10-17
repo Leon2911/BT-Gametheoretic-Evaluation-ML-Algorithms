@@ -11,7 +11,7 @@ from Main.IGD_Setup.Action import Action
 # TODO Since SARSA and Q-Learning are almost identical, maybe create a "QLearningBasedAgent-class" from which both inherit
 
 class QLearningAgent(BaseAgent):
-    def __init__(self, n_states=4, n_actions=2, alpha=0.1, gamma=0.95, temperature=1, q_table=None):
+    def __init__(self, n_states=4, n_actions=2, alpha=0.1, gamma=0.95, temperature=1, temperature_decay=0.9995, min_temperature=0.01, q_table=None):
         """
         Q-Learning agent with Softmax Policy
 
@@ -33,7 +33,11 @@ class QLearningAgent(BaseAgent):
         self.n_actions = n_actions
         self.alpha = alpha
         self.gamma = gamma
+        self.initial_temperature = temperature
         self.temperature = temperature
+        self.temperature_decay = temperature_decay
+        self.min_temperature = min_temperature
+
 
         # Initializing Q-Table
         if q_table is None:
@@ -42,6 +46,11 @@ class QLearningAgent(BaseAgent):
         else:
             self.q_table = q_table # Agenten nutzen die vom Nutzer übergebene initiale Q-Table (siehe Main.py)
 
+    def reset_stats(self):
+        """Resets statistics AND resets the temperature to its initial value."""
+        super().reset_stats()
+        # Wichtig für reproduzierbare Experimente
+        self.temperature = self.initial_temperature
 
     def _softmax(self, logits):
         """Auxiliary function: Softmax probabilities for a state vector"""
@@ -76,6 +85,8 @@ class QLearningAgent(BaseAgent):
         for obs, action, reward, next_obs, done in experience_buffer:
             # Calls its own optimize method
             self.optimize(obs, action.value, reward, next_obs, done)
+
+        self.temperature = max(self.min_temperature, self.temperature * self.temperature_decay)
 
     def get_policy(self):
         """

@@ -9,7 +9,7 @@ from Main.IGD_Setup.Action import Action
 
 
 class SARSAAgent(BaseAgent):
-    def __init__(self, n_states=4, n_actions=2, alpha=0.1, gamma=0.95, temperature=1.0, name="SARSAAgent", q_table=None):
+    def __init__(self, n_states=4, n_actions=2, alpha=0.1, gamma=0.95, temperature=1.0, temperature_decay=0.9995, min_temperature=0.01, name="SARSAAgent", q_table=None):
         """
         SARSA Agent with Softmax Policy.
 
@@ -31,7 +31,10 @@ class SARSAAgent(BaseAgent):
         self.n_actions = n_actions
         self.alpha = alpha
         self.gamma = gamma
+        self.initial_temperature = temperature
         self.temperature = temperature
+        self.temperature_decay = temperature_decay
+        self.min_temperature = min_temperature
 
 
         # Initializing Q-Table
@@ -92,6 +95,8 @@ class SARSAAgent(BaseAgent):
         if experience_buffer:
             obs, action, reward, next_obs, done = experience_buffer[-1]
             self.optimize(obs, action.value, reward, next_obs, None, done)
+
+        self.temperature = max(self.min_temperature, self.temperature * self.temperature_decay)
 
     def get_strategic_cooperation_advantage(self) -> float:
         """

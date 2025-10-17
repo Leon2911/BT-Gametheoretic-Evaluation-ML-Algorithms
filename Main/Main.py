@@ -1,17 +1,12 @@
 import numpy as np
 import random
 
-from Main.Agenten.Enums.PureStrategy import PureStrategy
-from Main.Agenten.PureAgent import PureAgent
-from Main.Agenten.QLearningAgent import QLearningAgent
-from Main.Agenten.SARSAAgent import SARSAAgent
 from Main.Evaluation.Evaluation import Evaluation, log_simulation_parameters
 from Main.IGD_Setup.IPDEnv import IPDEnv
 from Main.SimulationManager import calculate_max_reward, print_results
 from Main.Matchmakingschemes.MatchmakingScheme import SpatialGridScheme, calculate_grid_size, RandomPairingScheme
-
 from Main.SimulationSetup import GridFactory
-from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION
+from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defector_invasion, layout_map_blank
 
 # === SIMULATION SETUP ===
 
@@ -22,17 +17,16 @@ simulation_params = {
     "num_matches": 3000,
     "num_episodes_per_match": 1,
     "num_rounds_per_episode": 200,
-    "seed": 6
+    "seed": 2
 }
 
 # Definiere die Lern-Hyperparameter für die Protokollierung
 learning_params = {
-    "n_states": 4,
-    "n_actions": 2,
     "alpha": 0.1,
     "gamma": 0.95,
-    "temperature": 1.0,
-    #"temperature_decay": 0.999
+    "temperature": 0.5,
+    "temperature_decay": 0.9999,
+    "min_temperature": 0.01
 }
 
 num_matches = simulation_params["num_matches"]
@@ -70,8 +64,10 @@ cluster_requests = [
     }
 ]
 
-layout_map = GridFactory.generate_layout_with_clusters(total_composition, cluster_requests)
+#layout_map = GridFactory.generate_layout_with_clusters(total_composition, cluster_requests)
 #layout_map = COOP_CORE_INVASION
+#layout_map = layout_map_defector_invasion
+layout_map = layout_map_blank
 
 grid, agent_pool, agent_counts = GridFactory.create_from_layout(layout_map)
 GRID_SIZE = grid.shape
@@ -100,10 +96,10 @@ evaluation.record(initial_results, -1)
 # === INITIALISIERE MATCHMAKING-SCHEMA ===
 
 # Random pairing scheme
-#scheme = RandomPairingScheme()
+scheme = RandomPairingScheme()
 
 # Spatial Grid Scheme
-scheme = SpatialGridScheme(neighborhood_type="moore")
+#scheme = SpatialGridScheme(neighborhood_type="moore")
 
 
 #evaluation.record_replay_step(grid, active_players=(None, None))
@@ -127,8 +123,8 @@ print(f"")
 for match_num in range(num_matches):
 
     # === 1. PAARUNGSPHASE ===
-    #agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool) # RandomPairingScheme takes agent_pool
-    agent_p1, agent_p2 = scheme.choose_agent_pair(grid) # SpatialGridScheme takes grid
+    agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool) # RandomPairingScheme takes agent_pool
+    #agent_p1, agent_p2 = scheme.choose_agent_pair(grid) # SpatialGridScheme takes grid
     agent_map = {"player_1": agent_p1, "player_2": agent_p2}
 
     #print(f"\n--- Match {match_num + 1}/{num_matches}: {agent_p1.id} vs. {agent_p2.id} ---")
