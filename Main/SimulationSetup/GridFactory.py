@@ -38,6 +38,7 @@ agent_key_map = {
     # Standardeinstellung
     'QL':  {'class': QLearningAgent},
     'SA':  {'class': SARSAAgent},
+    'QLE': {'class': QLearningAgent, 'params': {'policy': "Softmax"}},
 
     # Voreingestellte Q-Learning-Agenten
     'QL_TFT': {'class': QLearningAgent, 'params': {'q_table': q_table_titfortat}},

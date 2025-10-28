@@ -6,7 +6,8 @@ from Main.IGD_Setup.IPDEnv import IPDEnv
 from Main.SimulationManager import calculate_max_reward, print_results
 from Main.Matchmakingschemes.MatchmakingScheme import SpatialGridScheme, calculate_grid_size, RandomPairingScheme
 from Main.SimulationSetup import GridFactory
-from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defector_invasion, layout_map_blank
+from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defector_invasion, layout_map_blank, \
+    layout_map_blank_softmax, layout_map_coop_start
 
 # === SIMULATION SETUP ===
 
@@ -14,18 +15,18 @@ from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defec
 LOG_FILE = "simulation_log.md"
 
 simulation_params = {
-    "num_matches": 3000,
+    "num_matches": 20000,
     "num_episodes_per_match": 1,
     "num_rounds_per_episode": 200,
-    "seed": 2
+    "seed": 0
 }
 
 # Definiere die Lern-Hyperparameter für die Protokollierung
 learning_params = {
     "alpha": 0.1,
     "gamma": 0.95,
-    "temperature": 0.5,
-    "temperature_decay": 0.9999,
+    "temperature": 1.0,
+    "temperature_decay": 0.9995,
     "min_temperature": 0.01
 }
 
@@ -45,28 +46,30 @@ evaluation = Evaluation()
 
 # 1. Definiere die Gesamt-Zusammensetzung deiner Welt
 total_composition = {
-    'QL': 182,
-    'QL_TFT': 9, # 18 für die Cluster + 2 extra
-    'QL_AD': 9,
-} # Gesamt: 160 Agenten
+    'QL': 180,
+    #'QL_TFT': 9, # 18 für die Cluster + 2 extra
+    'AC': 20,
+} # Gesamt: 200 Agenten
 
 # 2. Definiere die "Spezialanweisungen" für die Cluster-Platzierung
 cluster_requests = [
-    {
-        'type': 'QL_TFT', # Agententyp des Clusters
-        'count': 1,        # Anzahl der zu erstellenden Cluster dieses Typs
-        'neighborhood': 'moore' # (Aktuell wird immer 3x3 platziert, aber gut für die Doku)
-    },
-    {
-        'type': 'QL_AD',  # Agententyp des Clusters
-        'count': 1,  # Anzahl der zu erstellenden Cluster dieses Typs
-        'neighborhood': 'moore' # Art der Nachbarschaft
-    }
+    #{
+    #    'type': 'QL_TFT', # Agententyp des Clusters
+    #    'count': 1,        # Anzahl der zu erstellenden Cluster dieses Typs
+    #    'neighborhood': 'moore' # (Aktuell wird immer 3x3 platziert, aber gut für die Doku)
+    #},
+    #{
+    #    'type': 'QL_AD',  # Agententyp des Clusters
+    #    'count': 1,  # Anzahl der zu erstellenden Cluster dieses Typs
+    #    'neighborhood': 'moore' # Art der Nachbarschaft
+    #}
 ]
 
 #layout_map = GridFactory.generate_layout_with_clusters(total_composition, cluster_requests)
 #layout_map = COOP_CORE_INVASION
 #layout_map = layout_map_defector_invasion
+#layout_map = layout_map_blank_softmax
+#layout_map = layout_map_coop_start
 layout_map = layout_map_blank
 
 grid, agent_pool, agent_counts = GridFactory.create_from_layout(layout_map)
@@ -96,10 +99,10 @@ evaluation.record(initial_results, -1)
 # === INITIALISIERE MATCHMAKING-SCHEMA ===
 
 # Random pairing scheme
-scheme = RandomPairingScheme()
+#scheme = RandomPairingScheme()
 
 # Spatial Grid Scheme
-#scheme = SpatialGridScheme(neighborhood_type="moore")
+scheme = SpatialGridScheme(neighborhood_type="moore")
 
 
 #evaluation.record_replay_step(grid, active_players=(None, None))
@@ -123,8 +126,9 @@ print(f"")
 for match_num in range(num_matches):
 
     # === 1. PAARUNGSPHASE ===
-    agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool) # RandomPairingScheme takes agent_pool
-    #agent_p1, agent_p2 = scheme.choose_agent_pair(grid) # SpatialGridScheme takes grid
+    #agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool) # RandomPairingScheme takes agent_pool
+    agent_p1, agent_p2 = scheme.choose_agent_pair(grid) # SpatialGridScheme takes grid
+
     agent_map = {"player_1": agent_p1, "player_2": agent_p2}
 
     #print(f"\n--- Match {match_num + 1}/{num_matches}: {agent_p1.id} vs. {agent_p2.id} ---")
@@ -163,7 +167,9 @@ for match_num in range(num_matches):
                     next_observations[agent_id],
                     done
                 )
-                experience_buffers[agent_id].append(experience)
+                #experience_buffers[agent_id].append(experience) # Offline-Lernen (Experience-Buffer zum Speichern der Interaktionen)
+
+                agent_map[agent_id].train([experience]) # Online-lernen (Kein Buffer benötigt, es wird sofort gelernt)
 
             observations = next_observations
         env.close()
@@ -171,8 +177,8 @@ for match_num in range(num_matches):
     # === 3. LERNPHASE (Batch-Update nach dem Match) ===
     #print(f"++++++Match beendet. {agent_p1.id} und {agent_p2.id} lernen jetzt...++++++")
 
-    agent_p1.train(experience_buffers["player_1"])
-    agent_p2.train(experience_buffers["player_2"])
+    #agent_p1.train(experience_buffers["player_1"]) # Für Offline-Lernen/Batch-Lernen wieder einklammern
+    #agent_p2.train(experience_buffers["player_2"]) # Für Offline-Lernen/Batch-Lernen wieder einklammern
 
     agent_p1.log_match_played()
     agent_p2.log_match_played()
@@ -199,10 +205,23 @@ print("\n++++++Simulation beendet.++++++")
 # === FINALE ANALYSE ===
 print("\n--- Finale Strategien der Agenten im Pool ---")
 print_results(agent_pool, max_reward)
+evaluation.print_final_average_coop_rates(agent_pool)
+
+if evaluation.replay_history:
+    final_grid_state = evaluation.replay_history[-1]["grid"]
+    evaluation.analyze_final_clusters(final_grid_state)
+else:
+    # Falls keine Replay-History gespeichert wurde, verwende das 'grid'-Objekt
+    evaluation.analyze_final_clusters(grid)
+
 
 # === VISUALISIERUNG ===
 evaluation.plot_aggregated_strategies(agent_pool, num_matches)
 #evaluation.plot_strategies(agent_pool, num_matches)
 evaluation.plot_aggregated_coop_rates(agent_pool, num_matches)
 evaluation.plot_aggregated_rewards(agent_pool, num_matches)
+evaluation.plot_reward_by_coop_category(agent_pool, num_bins=4)
+
+
 evaluation.render_interactive_grid_replay(cell_size=50)
+

@@ -11,6 +11,19 @@ COOP_CORE_INVASION = [
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
 ]
 
+layout_map_coop_start = [
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+]
+
 layout_map_blank = [
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
@@ -24,6 +37,18 @@ layout_map_blank = [
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
 ]
 
+layout_map_blank_softmax = [
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+]
 
 layout_map_defector_invasion = [
     ['TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT', 'TFT'],

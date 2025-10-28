@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 import pygame
 
@@ -12,6 +12,9 @@ from Main.Agenten.Enums.PureStrategy import PureStrategy
 from Main.Agenten.PureAgent import PureAgent
 from Main.Agenten.QLearningAgent import QLearningAgent
 from Main.Agenten.SARSAAgent import SARSAAgent
+from scipy.ndimage import label, sum_labels
+import seaborn as sns
+import pandas as pd
 
 CELL_SIZE = 20
 
@@ -22,26 +25,13 @@ GREEN = (50, 255, 50)  # Rein Kooperativ (ALLC)
 MINT_GREEN = (152, 251, 152) # Für starke Kooperatoren
 CYAN = (0, 200, 200) # Kooperiert nur, wenn beide letzte Runde kooperiert haben
 PURPLE = (200, 100, 255) # Win-Stay, Lose-Shift (Pavlov)
-ORANGE = (255, 140, 0)
+ORANGE = (255, 140, 0) # Polarisiert
 YELLOW = (255, 200, 50)  # Gemischte/Lernende Strategie
 GREY = (128, 128, 128)  # Unbekannt oder neutral
 
 
-def lerp_color(color1: tuple, color2: tuple, factor: float) -> tuple[int, int, int]:
-    """
-    Lineare Interpolation zwischen zwei RGB-Tupeln.
-    Wandelt intern in NumPy-Arrays für die Berechnung um.
-    """
-    # Konvertiere die Input-Tupel in NumPy-Arrays
-    c1 = np.array(color1)
-    c2 = np.array(color2)
 
-    result = c1 * (1 - factor) + c2 * factor
-
-    return tuple(result.astype(int))
-
-
-def get_agent_color_spectrum(agent) -> tuple[int, int, int]:
+def get_agent_color(agent) -> tuple[int, int, int]:
     """
     Analysiert die Strategie eines Agenten und weist eine Farbe aus einem
     kontinuierlichen Spektrum für die jeweilige Kategorie zu.
@@ -66,43 +56,30 @@ def get_agent_color_spectrum(agent) -> tuple[int, int, int]:
 
         # --- KATEGORISIERUNG MIT FARBSPEKTRUM ---
 
-        # Tit-for-Tat-Spektrum (BLAU)
+        # Tit-for-Tat BLAU
         if p_cc > 0.8 and p_cd < 0.2 and p_dc > 0.8 and p_dd < 0.2:
-            # Intensität basiert auf der Übereinstimmung mit dem TFT-Muster.
-            intensity = (p_cc + (1 - p_cd) + p_dc + (1 - p_dd)) / 4.0
-            return lerp_color(YELLOW, BLUE, intensity)
+            return BLUE
 
-        # Win-Stay-Lose-Shift-Spektrum (PURPLE)
+        # Win-Stay-Lose-Shift PURPLE
         elif p_cc > 0.8 and p_cd < 0.2 and p_dc < 0.2 and p_dd > 0.2:
-            # Intensität basiert auf der Übereinstimmung mit dem WSLS-Muster.
-            intensity = (p_cc + (1 - p_cd) + (1 - p_dc) + p_dd) / 4.0
-            return lerp_color(YELLOW, PURPLE, intensity)
+            return PURPLE
 
-        # Vorsichtiger-Kooperator-Spektrum (CYAN)
+        # Vorsichtiger-Kooperator CYAN
         elif p_cc > 0.8 and p_cd < 0.2 and p_dc < 0.2 and p_dd < 0.2:
-            # Intensität basiert darauf, wie stark die TFT-ähnliche Reaktion ist.
-            intensity = (p_cc + (1 - p_cd)) / 2.0
-            return lerp_color(YELLOW, CYAN, intensity)
+            return CYAN
 
         elif np.sum(coop_policy > 0.8) == 2 and np.sum(coop_policy < 0.2) == 2:
-            # Die Intensität spiegelt wider, wie extrem die Polarisierung ist.
-            # (Werte nahe 1 und 0 geben eine höhere Intensität)
-            intensity = np.mean([p if p > 0.5 else 1-p for p in coop_policy])
-            return lerp_color(YELLOW, ORANGE, float(intensity))
+            return ORANGE
 
-        # Allgemeines Kooperations-Spektrum (GRÜN)
+        # Allgemeiner Kooperator GRÜN
         # Wenn mindestens 2 Werte > 0.8 sind
         elif np.sum(coop_policy > 0.8) >= 2:
-            # Die Intensität ist der Durchschnitt der Kooperations-Wahrscheinlichkeiten
-            intensity = np.mean(coop_policy)
-            return lerp_color(YELLOW, GREEN, intensity)
+            return GREEN
 
-        # Allgemeines Defektor-Spektrum (ROT)
+        # Allgemeiner Defektor ROT
         # Wenn mindestens 2 Werte < 0.2 sind
         elif np.sum(coop_policy < 0.2) >= 2:
-            # Die Intensität ist die durchschnittliche Defektions-Wahrscheinlichkeit
-            intensity = 1.0 - np.mean(coop_policy)
-            return lerp_color(YELLOW, RED, intensity)
+            return RED
 
         # Fallback 1 für gemischte Strategien
         else:
@@ -404,6 +381,207 @@ class Evaluation:
         plt.tight_layout()
         plt.show()
 
+    def analyze_final_clusters(self, final_grid):
+        """
+        Analysiert die Cluster im finalen Gitterzustand und gibt Metriken aus.
+        Berechnet die Gesamtfläche und die Anzahl der Cluster pro Strategietyp.
+        """
+        print("\n--- Analyse der finalen Cluster-Struktur ---")
+
+        if final_grid is None or final_grid.size == 0:
+            print("Fehler: Kein gültiges finales Gitter zur Analyse vorhanden.")
+            return
+
+        grid_shape = final_grid.shape
+        total_cells = grid_shape[0] * grid_shape[1]
+
+        # Schritt 1: Erstelle eine Matrix mit den Strategie-Typen (als Zahlen oder Strings)
+        # Wir verwenden hier die Farblogik, um einen Typ zu repräsentieren
+        strategy_type_grid = np.zeros(grid_shape, dtype=object)
+        color_to_type_map = {  # Mapping von Farbe zu einem lesbaren Namen
+            RED: "Defector",
+            BLUE: "TFT-like",
+            GREEN: "Cooperator (ALLC)",
+            CYAN: "Cautious Coop.",
+            PURPLE: "WSLS",
+            ORANGE: "Polarized",
+            YELLOW: "Mixed/Learning",
+            GREY: "Unknown"
+        }
+
+        for y in range(grid_shape[0]):
+            for x in range(grid_shape[1]):
+                agent = final_grid[y, x]
+                if agent:
+                    color = get_agent_color(agent)  # Deine Farbfunktion
+                    strategy_type_grid[y, x] = color_to_type_map.get(color, "Unknown")
+                else:
+                    strategy_type_grid[y, x] = "Empty"  # Falls Gitter leer sein kann
+
+        # Schritt 2: Identifiziere zusammenhängende Cluster gleichen Typs
+        # Wir brauchen eine numerische Repräsentation der Typen für label()
+        unique_types = np.unique(strategy_type_grid)
+        type_to_int = {type_name: i for i, type_name in enumerate(unique_types)}
+        numeric_grid = np.vectorize(type_to_int.get)(strategy_type_grid)
+
+        # Führe das Labeling durch (erkennt Cluster gleicher Zahl)
+        labeled_grid, num_total_clusters = label(numeric_grid)
+
+        print(f"Insgesamt {num_total_clusters} Cluster gefunden.")
+
+        # Schritt 3: Berechne Metriken pro Strategietyp
+
+        # a) Gesamtfläche pro Typ
+        print("\n**Gesamtfläche pro Strategietyp:**")
+        type_counts = Counter(strategy_type_grid.flatten())
+        for type_name, count in sorted(type_counts.items(), key=lambda item: item[1], reverse=True):
+            percentage = (count / total_cells) * 100
+            print(f"- {type_name}: {count} Zellen ({percentage:.1f}%)")
+
+        # b) Anzahl der Cluster pro Typ
+        print("\n**Anzahl der Cluster pro Strategietyp:**")
+        cluster_types = {}  # Speichert {cluster_id: type_name}
+        # Finde den Typ für jede Cluster-ID
+        # Wir nehmen den Typ des ersten Pixels jedes Labels (außer Label 0 = Hintergrund)
+        for cluster_id in range(1, num_total_clusters + 1):
+            # Finde die Koordinaten des ersten Pixels dieses Clusters
+            coords = np.argwhere(labeled_grid == cluster_id)[0]
+            cluster_types[cluster_id] = strategy_type_grid[tuple(coords)]
+
+        # Zähle, wie oft jeder Typ vorkommt
+        cluster_type_counts = Counter(cluster_types.values())
+        for type_name, count in sorted(cluster_type_counts.items(), key=lambda item: item[1], reverse=True):
+            print(f"- {type_name}: {count} Cluster")
+
+        # (Optional) c) Größe des größten Clusters pro Typ
+        print("\n**Größe des größten Clusters pro Strategietyp:**")
+        # Berechne die Größe jedes Clusters
+        cluster_sizes = sum_labels(np.ones_like(labeled_grid), labels=labeled_grid,
+                                   index=np.arange(1, num_total_clusters + 1))
+
+        max_sizes = {}
+        for cluster_id, size in enumerate(cluster_sizes, start=1):
+            type_name = cluster_types[cluster_id]
+            if type_name not in max_sizes or size > max_sizes[type_name]:
+                max_sizes[type_name] = size
+
+        for type_name, max_size in sorted(max_sizes.items(), key=lambda item: item[1], reverse=True):
+            print(f"- {type_name}: {max_size} Zellen")
+
+    def print_final_average_coop_rates(self, agent_pool):
+        """
+        Berechnet und druckt die durchschnittliche Kooperationsrate über den
+        gesamten Simulationszeitraum für jeden Agententyp.
+        """
+        if not self.coop_rates_over_time:
+            print("Keine Daten zur Kooperationsrate vorhanden.")
+            return
+
+        print("\n--- Durchschnittliche Kooperationsrate (Gesamter Zeitraum) ---")
+
+        # Gruppiere die Verlaufsdaten nach dem Typ des Agenten
+        grouped_rates = _group_by_type(self.coop_rates_over_time, agent_pool)
+
+        # Liste zum Speichern der Ergebnisse für eine eventuelle Sortierung
+        results = []
+
+        for agent_type, histories in grouped_rates.items():
+            # Liste für die Durchschnittsraten aller Agenten dieses Typs
+            type_averages = []
+
+            for history in histories:
+                # Extrahiere nur die Kooperationsraten (ignoriere Zeitstempel)
+                # Ignoriere den Initialwert bei t=0, falls vorhanden und nicht Teil des echten Verlaufs
+                if not history: continue
+
+                # Nimm alle Werte außer dem ersten (der bei t=0 oder t=-1 ist)
+                agent_rates = [rate for time, rate in history if time >= 0]
+
+                if agent_rates:  # Nur wenn der Agent gespielt hat
+                    # Berechne den Durchschnitt für diesen einen Agenten
+                    avg_rate_agent = np.mean(agent_rates)
+                    type_averages.append(avg_rate_agent)
+
+            if type_averages:  # Nur wenn Agenten dieses Typs gespielt haben
+                # Berechne den Durchschnitt über alle Agenten dieses Typs
+                avg_rate_type = np.mean(type_averages)
+                results.append((agent_type, avg_rate_type))
+            else:
+                results.append((agent_type, 0.0))  # Falls keine Daten für diesen Typ
+
+        # Sortiere die Ergebnisse nach der durchschnittlichen Rate (absteigend)
+        results.sort(key=lambda item: item[1], reverse=True)
+
+        # Gib die sortierten Ergebnisse aus
+        for agent_type, avg_rate in results:
+            print(f"- Typ '{agent_type}': {avg_rate:.2f}%")
+
+    def plot_reward_by_coop_category(self, agent_pool, num_bins=4):
+        """
+        Erstellt einen Boxplot mit relativen Kooperationsraten-Kategorien,
+        basierend auf der beobachteten Min/Max-Rate in der Simulation.
+
+        Args:
+            agent_pool: Die Liste der Agenten am Ende der Simulation.
+            num_bins (int): Die Anzahl der Kategorien (Bins).
+        """
+        print(f"\n--- Erstelle Boxplot: Reward vs. relative Kooperationsrate-Kategorie ({num_bins} Bins) ---")
+        if not agent_pool: return
+
+        data = []
+        # --- Datensammlung (wie zuvor) ---
+        for agent in agent_pool:
+            avg_coop_rate = 0.0
+            if agent.id in self.coop_rates_over_time:
+                agent_rates = [rate for time, rate in self.coop_rates_over_time[agent.id] if time >= 0]
+                if agent_rates:
+                    avg_coop_rate = np.mean(agent_rates)
+
+            avg_reward_per_match = agent.get_total_reward_mean()
+            data.append({
+                "Avg Coop Rate (%)": avg_coop_rate,
+                "Avg Reward/Match": avg_reward_per_match,
+                "Agent Type": agent.__class__.__name__
+            })
+
+        if not data: return
+        df = pd.DataFrame(data)
+
+        # --- START DER ÄNDERUNG ---
+        # Verwende pd.cut, um N Bins basierend auf dem Datenbereich zu erstellen
+        try:
+            # pd.cut erstellt die Kategorienobjekte
+            cut_results, bin_edges_calculated = pd.cut(df['Avg Coop Rate (%)'], bins=num_bins, include_lowest=True,
+                                                       retbins=True)
+            df['Coop Category'] = cut_results
+
+            # Erstelle lesbare Labels aus den berechneten Bin-Grenzen
+            bin_labels = [f"{bin_edges_calculated[i]:.1f}-{bin_edges_calculated[i + 1]:.1f}%" for i in range(num_bins)]
+            # Weise die Labels den Kategorien zu (wichtig für die x-Achse)
+            df['Coop Category'] = df['Coop Category'].cat.rename_categories(bin_labels)
+
+        except ValueError:  # Fehlerbehandlung, falls alle Werte gleich sind
+            print("Warnung: Alle Agenten haben die gleiche Kooperationsrate. Boxplot nach Kategorie nicht sinnvoll.")
+            # ... (Fallback-Plot wie zuvor) ...
+            return
+        except IndexError:  # Fehlerbehandlung, falls zu wenige unique Werte für bins vorhanden
+            print(
+                f"Warnung: Zu wenige unterschiedliche Kooperationsraten ({df['Avg Coop Rate (%)'].nunique()}), um {num_bins} Bins zu bilden. Reduziere num_bins oder analysiere anders.")
+            return
+        # --- ENDE DER ÄNDERUNG ---
+
+        # Erstelle den Boxplot (Rest bleibt gleich)
+        plt.figure(figsize=(12, 7))
+        sns.boxplot(x='Coop Category', y='Avg Reward/Match', data=df, hue="Agent Type", palette="Set2")
+
+        plt.title(f"Durchschnittlicher Reward pro Match nach Kooperationsrate ({num_bins} rel. Bins)")
+        plt.xlabel("Durchschnittliche Kooperationsrate (Gesamter Zeitraum)")
+        plt.ylabel("Avg. Reward / Match")
+        plt.legend(title="Agententyp", bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.grid(True, linestyle="--", alpha=0.6)
+        plt.xticks(rotation=45, ha='right')  # Labels drehen
+        plt.tight_layout()
+        plt.show()
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++++++++++++++++++++++++++++++ RENDERING ++++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -417,7 +595,7 @@ class Evaluation:
             return
 
         pygame.init()
-        pygame.key.set_repeat(200, 35)
+        pygame.key.set_repeat(200, 10)
 
         grid_shape = self.replay_history[0]["grid"].shape
 
@@ -526,7 +704,7 @@ class Evaluation:
                 for x in range(grid_shape[1]):
                     agent = grid_to_draw[y, x]
                     if agent is None: continue
-                    color = get_agent_color_spectrum(agent)
+                    color = get_agent_color(agent)
                     rect = pygame.Rect(grid_x_start + x * cell_size, y * cell_size, cell_size, cell_size)
                     pygame.draw.rect(screen, color, rect)
                     pygame.draw.rect(screen, (80, 80, 80), rect, 1)
@@ -583,7 +761,7 @@ class Evaluation:
                 break  # Wir sind unterhalb des sichtbaren Bereichs
             if y_offset + line_height > y_start:  # Beginne erst im sichtbaren Bereich zu zeichnen
                 # Agenten-ID und Farbe
-                color = get_agent_color_spectrum(agent)
+                color = get_agent_color(agent)
                 id_surface = agent_font.render(agent.id, True, color)
                 screen.blit(id_surface, (panel_x_start + 10, y_offset))
 
