@@ -62,7 +62,7 @@ class SpatialGridScheme(MatchmakingScheme):
         Args:
             neighborhood_type (str): 'moore' (8 Nachbarn) oder 'von_neumann' (4 Nachbarn).
         """
-        if neighborhood_type not in ['moore', 'von_neumann']:
+        if neighborhood_type not in ['moore', 'von_neumann', 'extended_moore']:
             raise ValueError("neighborhood_type muss 'moore' oder 'von_neumann' sein.")
         self.neighborhood_type = neighborhood_type
 
@@ -74,8 +74,12 @@ class SpatialGridScheme(MatchmakingScheme):
         neighbors = []
         if self.neighborhood_type == 'moore':
             deltas = [(dx, dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if not (dx == 0 and dy == 0)]
-        else:  # von_neumann
+        if self.neighborhood_type == 'von_neumann':
             deltas = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        else:  # extended_moore
+            deltas = [(dx, dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if not (dx == 0 and dy == 0)]
+            extended_deltas = [(0, 2), (0, -2), (2, 0), (-2, 0)]
+            deltas.extend(extended_deltas)
 
         for dx, dy in deltas:
             nx, ny = x + dx, y + dy

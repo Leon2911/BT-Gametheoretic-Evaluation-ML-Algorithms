@@ -2395,3 +2395,25 @@
 
 ---
 
+## Simulationslauf vom: 2025-10-31 20:52:23
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `5000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+

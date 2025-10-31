@@ -15,7 +15,7 @@ from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defec
 LOG_FILE = "simulation_log.md"
 
 simulation_params = {
-    "num_matches": 20000,
+    "num_matches": 5000,
     "num_episodes_per_match": 1,
     "num_rounds_per_episode": 200,
     "seed": 0
@@ -102,7 +102,7 @@ evaluation.record(initial_results, -1)
 #scheme = RandomPairingScheme()
 
 # Spatial Grid Scheme
-scheme = SpatialGridScheme(neighborhood_type="moore")
+scheme = SpatialGridScheme(neighborhood_type="extended_moore")
 
 
 #evaluation.record_replay_step(grid, active_players=(None, None))

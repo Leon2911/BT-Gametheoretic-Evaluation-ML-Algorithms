@@ -259,7 +259,6 @@ class Evaluation:
 
 
         for ax, (agent_type, histories) in zip(axs, grouped_strategies.items()):
-            # ... (deine Logik zur Datenaufbereitung bleibt unverändert) ...
             all_times = sorted(list(set(t for history in histories for t, v in history)))
             aligned_strategies = np.zeros((len(histories), len(all_times), 4))
             for i, history in enumerate(histories):
