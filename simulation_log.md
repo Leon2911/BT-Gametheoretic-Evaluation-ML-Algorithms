@@ -2417,3 +2417,509 @@
 
 ---
 
+## Simulationslauf vom: 2025-11-01 11:44:52
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `20000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-01 12:29:00
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `2000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-01 12:29:32
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `2000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-01 12:35:23
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `2000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-01 12:37:31
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `2000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-01 12:37:44
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `20000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-01 12:52:44
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `50000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-01 13:00:58
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `150000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-01 13:10:03
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `150000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-02 19:18:06
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 19)`
+- **Anzahl Matches/Duelle:** `1000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `199`
+- **Gesamt:** `199` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-02 20:03:50
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(4, 20)`
+- **Anzahl Matches/Duelle:** `1000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `80`
+- **Gesamt:** `80` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-02 21:40:06
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `1000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-03 19:34:00
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `1000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-03 19:34:33
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `20000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-03 19:40:21
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `20000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-03 19:47:23
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `50000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-04 20:51:52
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `50000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-04 20:56:58
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `50000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-04 20:58:56
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `50000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-04 20:59:09
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `50000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-04 20:59:28
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `50000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-04 21:02:51
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `20000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-04 21:09:21
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `50000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.1`
+- **gamma:** `0.95`
+- **temperature:** `1.0`
+- **temperature_decay:** `0.9995`
+- **min_temperature:** `0.01`
+
+---
+

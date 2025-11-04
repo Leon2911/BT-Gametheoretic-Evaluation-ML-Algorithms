@@ -111,10 +111,10 @@ class QLearningAgent(BaseAgent):
             # Calls its own optimize method
             self.optimize(obs, action.value, reward, next_obs, done)
 
-        if self.policy == "Epsilon-Greedy":
-            self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
-        else:
-            self.temperature = max(self.min_temperature, self.temperature * self.temperature_decay)
+            if self.policy == "Epsilon-Greedy":
+                self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
+            else:
+                self.temperature = max(self.min_temperature, self.temperature * self.temperature_decay)
 
     def get_policy(self):
         """

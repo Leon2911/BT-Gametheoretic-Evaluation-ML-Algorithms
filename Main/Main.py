@@ -15,7 +15,7 @@ from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defec
 LOG_FILE = "simulation_log.md"
 
 simulation_params = {
-    "num_matches": 5000,
+    "num_matches": 50000,
     "num_episodes_per_match": 1,
     "num_rounds_per_episode": 200,
     "seed": 0
@@ -123,6 +123,7 @@ log_simulation_parameters(LOG_FILE, all_params)
 print("Starte Simulation mit dynamischem Matchmaking...")
 print(f"")
 
+
 for match_num in range(num_matches):
 
     # === 1. PAARUNGSPHASE ===
@@ -167,9 +168,9 @@ for match_num in range(num_matches):
                     next_observations[agent_id],
                     done
                 )
-                #experience_buffers[agent_id].append(experience) # Offline-Lernen (Experience-Buffer zum Speichern der Interaktionen)
+                experience_buffers[agent_id].append(experience) # Offline-Lernen (Experience-Buffer zum Speichern der Interaktionen)
 
-                agent_map[agent_id].train([experience]) # Online-lernen (Kein Buffer benötigt, es wird sofort gelernt)
+                #agent_map[agent_id].train([experience]) # Online-lernen (Kein Buffer benötigt, es wird sofort gelernt)
 
             observations = next_observations
         env.close()
@@ -177,8 +178,11 @@ for match_num in range(num_matches):
     # === 3. LERNPHASE (Batch-Update nach dem Match) ===
     #print(f"++++++Match beendet. {agent_p1.id} und {agent_p2.id} lernen jetzt...++++++")
 
-    #agent_p1.train(experience_buffers["player_1"]) # Für Offline-Lernen/Batch-Lernen wieder einklammern
-    #agent_p2.train(experience_buffers["player_2"]) # Für Offline-Lernen/Batch-Lernen wieder einklammern
+
+    agent_p1.train(experience_buffers["player_1"]) # Für Offline-Lernen/Batch-Lernen wieder einklammern
+    agent_p2.train(experience_buffers["player_2"]) # Für Offline-Lernen/Batch-Lernen wieder einklammern
+
+
 
     agent_p1.log_match_played()
     agent_p2.log_match_played()

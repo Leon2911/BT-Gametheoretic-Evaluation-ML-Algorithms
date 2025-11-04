@@ -55,7 +55,7 @@ class SpatialGridScheme(MatchmakingScheme):
     Bei jedem Aufruf wird ein zufälliges Nachbarschafts-Duell zurückgegeben.
     """
 
-    def __init__(self, neighborhood_type: str = 'von_neumann'):
+    def __init__(self, neighborhood_type: str = 'moore'):
         """
         Initialisiert das Gitter-Schema.
 

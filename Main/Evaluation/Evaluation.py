@@ -688,13 +688,13 @@ class Evaluation:
                                            colorbar_height, "Total Reward Mean", f"{min_r:.0f}", f"{max_r:.0f}")
 
             # --- Kooperations-Payoff-Index Heatmap (links unten) ---
-            payoff_heatmap_y = reward_heatmap_y + heatmap_height + spacing_between_heatmaps + title_space + label_space
-            min_p, max_p = self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
-                                              payoff_heatmap_y + title_space + label_space, 'strategic_cooperation_advantage', 'coolwarm_r')
-            # Verwendung einer divergierende Colormap von Rot nach Blau
-            self._draw_horizontal_colorbar(screen, plt.get_cmap('coolwarm_r'), heatmap_x, payoff_heatmap_y,
-                                           heatmap_width, colorbar_height, "Strateg. Koop.-Vorteil", f"{min_p:.1f}",
-                                           f"{max_p:.1f}")
+            #payoff_heatmap_y = reward_heatmap_y + heatmap_height + spacing_between_heatmaps + title_space + label_space
+            #min_p, max_p = self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
+            #                                  payoff_heatmap_y + title_space + label_space, 'strategic_cooperation_advantage', 'coolwarm_r')
+            ## Verwendung einer divergierende Colormap von Rot nach Blau
+            #self._draw_horizontal_colorbar(screen, plt.get_cmap('coolwarm_r'), heatmap_x, payoff_heatmap_y,
+            #                               heatmap_width, colorbar_height, "Strateg. Koop.-Vorteil", f"{min_p:.1f}",
+            #                              f"{max_p:.1f}")
 
 
             # Panel 2: Gitter der Strategietypen (Mitte)
@@ -810,12 +810,12 @@ class Evaluation:
         elif data_type == 'total_reward':
             # Feste Skala von 0 bis zum theoretischen Maximum
             norm = mcolors.Normalize(vmin=0.0, vmax=max_reward_possible)
-        elif data_type == 'cooperation_payoff_index':
-            # Divergierende Skala mit Zentrum bei 0
-            # Finde den größten Abstand von Null, um die Skala symmetrisch zu machen
-            abs_max = max(abs(min_val), abs(max_val))
-            if abs_max == 0: abs_max = 1 # Verhindere eine Skala von [-0, 0]
-            norm = mcolors.TwoSlopeNorm(vcenter=0, vmin=-abs_max, vmax=abs_max)
+        #elif data_type == 'cooperation_payoff_index':
+        #    # Divergierende Skala mit Zentrum bei 0
+        #    # Finde den größten Abstand von Null, um die Skala symmetrisch zu machen
+        #    abs_max = max(abs(min_val), abs(max_val))
+        #    if abs_max == 0: abs_max = 1 # Verhindere eine Skala von [-0, 0]
+        #    norm = mcolors.TwoSlopeNorm(vcenter=0, vmin=-abs_max, vmax=abs_max)
         else: # Fallback für andere Daten
             norm = mcolors.Normalize(vmin=min_val, vmax=max_val)
 
