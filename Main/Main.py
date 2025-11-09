@@ -1,9 +1,11 @@
+from pathlib import Path
+
 import numpy as np
 import random
 
-from Main.Evaluation.Evaluation import Evaluation, log_simulation_parameters
+from Main.Evaluation.Evaluation import Evaluation, log_simulation_parameters, calculate_max_reward, print_results, \
+    log_simulation_results
 from Main.IGD_Setup.IPDEnv import IPDEnv
-from Main.SimulationManager import calculate_max_reward, print_results
 from Main.Matchmakingschemes.MatchmakingScheme import SpatialGridScheme, calculate_grid_size, RandomPairingScheme
 from Main.SimulationSetup import GridFactory
 from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defector_invasion, layout_map_blank, \
@@ -15,19 +17,22 @@ from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defec
 LOG_FILE = "simulation_log.md"
 
 simulation_params = {
-    "num_matches": 50000,
+    "num_matches": 60000,
     "num_episodes_per_match": 1,
     "num_rounds_per_episode": 200,
-    "seed": 0
+    "seed": 1
 }
 
 # Definiere die Lern-Hyperparameter für die Protokollierung
 learning_params = {
-    "alpha": 0.1,
+    "alpha": 0.05,
     "gamma": 0.95,
-    "temperature": 1.0,
-    "temperature_decay": 0.9995,
-    "min_temperature": 0.01
+    "epsilon": 1.0,
+    "epsilon_decay": 0.9995,
+    "min_epsilon": 0.01
+    #"temperature": 1.0,
+    #"temperature_decay": 0.9995,
+    #"min_temperature": 0.01
 }
 
 num_matches = simulation_params["num_matches"]
@@ -102,7 +107,7 @@ evaluation.record(initial_results, -1)
 #scheme = RandomPairingScheme()
 
 # Spatial Grid Scheme
-scheme = SpatialGridScheme(neighborhood_type="extended_moore")
+scheme = SpatialGridScheme(neighborhood_type="moore")
 
 
 #evaluation.record_replay_step(grid, active_players=(None, None))
@@ -128,7 +133,7 @@ for match_num in range(num_matches):
 
     # === 1. PAARUNGSPHASE ===
     #agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool) # RandomPairingScheme takes agent_pool
-    agent_p1, agent_p2 = scheme.choose_agent_pair(grid) # SpatialGridScheme takes grid
+    agent_p1, agent_p2 = scheme.choose_agent_pair(grid, match_num) # SpatialGridScheme takes grid
 
     agent_map = {"player_1": agent_p1, "player_2": agent_p2}
 
@@ -201,7 +206,12 @@ for match_num in range(num_matches):
             "reward": agent.get_total_reward()
         }
     evaluation.record(results, match_num)
-    evaluation.record_replay_step(grid, active_players=(agent_p1, agent_p2))
+
+    sampling_rate = 100
+
+    if match_num % sampling_rate == 0:
+        evaluation.record_replay_step(grid, active_players=(agent_p1, agent_p2))
+
     #print_results(agent_pool, max_reward)
 
 print("\n++++++Simulation beendet.++++++")
@@ -209,23 +219,29 @@ print("\n++++++Simulation beendet.++++++")
 # === FINALE ANALYSE ===
 print("\n--- Finale Strategien der Agenten im Pool ---")
 print_results(agent_pool, max_reward)
-evaluation.print_final_average_coop_rates(agent_pool)
+final_run_stats = evaluation.calculate_and_print_final_stats(agent_pool, max_reward)
 
 if evaluation.replay_history:
     final_grid_state = evaluation.replay_history[-1]["grid"]
-    evaluation.analyze_final_clusters(final_grid_state)
+    cluster_results = evaluation.analyze_final_clusters(final_grid_state)
 else:
     # Falls keine Replay-History gespeichert wurde, verwende das 'grid'-Objekt
-    evaluation.analyze_final_clusters(grid)
+    cluster_results = evaluation.analyze_final_clusters(grid)
 
+log_simulation_results(LOG_FILE, final_run_stats=final_run_stats,final_cluster_data=cluster_results)
 
 # === VISUALISIERUNG ===
 evaluation.plot_aggregated_strategies(agent_pool, num_matches)
 #evaluation.plot_strategies(agent_pool, num_matches)
 evaluation.plot_aggregated_coop_rates(agent_pool, num_matches)
 evaluation.plot_aggregated_rewards(agent_pool, num_matches)
-evaluation.plot_reward_by_coop_category(agent_pool, num_bins=4)
+#evaluation.plot_reward_by_coop_category(agent_pool, num_bins=4)
 
+######### SAVE RESULTS #############################
+OUTPUT_DIR = Path("Ergebnisse/Baseline_Setup/Datacollection")
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+output_filename = OUTPUT_DIR / f"run_data_seed_{SEED}.pkl"
+evaluation.save_results(output_filename, cluster_results, final_run_stats)
+#######################################################################
 
 evaluation.render_interactive_grid_replay(cell_size=50)
-

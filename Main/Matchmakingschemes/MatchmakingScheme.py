@@ -104,7 +104,7 @@ class SpatialGridScheme(MatchmakingScheme):
         random.shuffle(matches)
         self.match_queue = matches
 
-    def choose_agent_pair(self, grid: np.ndarray) -> Tuple:
+    def choose_agent_pair(self, grid: np.ndarray, current_match_count: int) -> Tuple:
         """
         Wählt das nächste Nachbarschafts-Paar aus der internen Warteschlange.
         Füllt die Warteschlange neu, wenn eine Generation abgeschlossen ist.
@@ -117,6 +117,7 @@ class SpatialGridScheme(MatchmakingScheme):
         """
         # Wenn die Warteschlange leer ist, starte eine neue Generation
         if not self.match_queue:
+            print(f"Progress: {current_match_count}\n")
             self._generate_new_generation_matches(grid)
 
         # Nimm das nächste Duell aus der Warteschlange und gib es zurück

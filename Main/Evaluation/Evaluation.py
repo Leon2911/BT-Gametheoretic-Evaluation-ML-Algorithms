@@ -1,5 +1,6 @@
 import datetime
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,14 +8,21 @@ import matplotlib.colors as mcolors
 from collections import defaultdict, Counter
 
 import pygame
+from typing import List, Dict
 
+from Main.Agenten.BaseAgent import format_strategy_vector
 from Main.Agenten.Enums.PureStrategy import PureStrategy
 from Main.Agenten.PureAgent import PureAgent
 from Main.Agenten.QLearningAgent import QLearningAgent
 from Main.Agenten.SARSAAgent import SARSAAgent
 from scipy.ndimage import label, sum_labels
+import pickle
 import seaborn as sns
 import pandas as pd
+
+from Main.Agenten.WoLF_PHC_Agent import WoLFPHC
+from Main.IGD_Setup.Action import Action
+from Main.IGD_Setup.IPDEnv import _ipd_payoff
 
 CELL_SIZE = 20
 
@@ -154,6 +162,124 @@ def log_simulation_parameters(filepath: str, params: dict):
         print(f"Fehler beim Schreiben der Log-Datei: {e}")
 
 
+def log_simulation_results(filepath: str, final_run_stats: dict, final_cluster_data: dict):
+    """
+    Hängt die finalen aggregierten Ergebnisse eines Simulationslaufs an die Log-Datei an.
+
+    Args:
+        filepath (str): Der Pfad zur Log-Datei (z.B. "simulation_log.md").
+        final_run_stats (dict): Das von 'calculate_and_print_final_stats' zurückgegebene Dict.
+        final_cluster_data (dict): Das von 'analyze_final_clusters' zurückgegebene Dict.
+    """
+
+    # --- Ergebnisse als Markdown formatieren ---
+    results_entry = "### Finale Ergebnisse (des obigen Laufs)\n\n"
+
+    # 1. Globale Metriken (Reward & Kooperation)
+    results_entry += "**Globale Metriken (Gesamtsystem):**\n"
+    if 'reward_system_total_percent_of_max' in final_run_stats:
+        results_entry += f"- **System-Effizienz (% des Max):** `{final_run_stats['reward_system_total_percent_of_max']:.2f}%`\n"
+    if 'coop_rate_global_mean' in final_run_stats:
+        results_entry += f"- **Durchschnittliche Kooperationsrate:** `{final_run_stats['coop_rate_global_mean']:.2f}%`\n"
+    results_entry += "\n"
+
+    # 2. Metriken pro Agententyp
+    results_entry += "**Metriken pro Agententyp (Durchschnitt über den gesamten Zeitraum):**\n"
+    if 'reward_mean_by_type' in final_run_stats:
+        results_entry += "- **Avg. Reward/Match:**\n"
+        for agent_type, reward in final_run_stats['reward_mean_by_type'].items():
+            results_entry += f"  - `{agent_type}`: {reward:.2f}\n"
+    if 'coop_rate_by_type' in final_run_stats:
+        results_entry += "- **Avg. Kooperationsrate:**\n"
+        for agent_type, rate in final_run_stats['coop_rate_by_type'].items():
+            results_entry += f"  - `{agent_type}`: {rate:.2f}%\n"
+    results_entry += "\n"
+
+    # 3. Cluster-Analyse
+    results_entry += "**Finale Cluster-Analyse:**\n"
+    if 'total_clusters' in final_cluster_data:
+        results_entry += f"- **Anzahl gefundener Cluster:** `{final_cluster_data['total_clusters']}`\n"
+    if 'area_by_type' in final_cluster_data:
+        results_entry += "- **Gesamtfläche pro Strategietyp:**\n"
+        for type_name, area in final_cluster_data['area_by_type'].items():
+            results_entry += f"  - `{type_name}`: {area:.1f}%\n"
+    if 'count_by_type' in final_cluster_data:
+        results_entry += "- **Anzahl Cluster pro Strategietyp:**\n"
+        for type_name, count in final_cluster_data['count_by_type'].items():
+            results_entry += f"  - `{type_name}`: {count}\n"
+
+    # Trennlinie für den nächsten Simulationslauf
+    results_entry += "\n---\n\n"
+
+    # --- An die Datei anhängen ---
+    try:
+        with open(filepath, 'a', encoding='utf-8') as f:
+            f.write(results_entry)
+        print("Finale Ergebnisse erfolgreich in Log-Datei geschrieben.")
+    except IOError as e:
+        print(f"Fehler beim Schreiben der Ergebnis-Log-Datei: {e}")
+
+def print_results(agent_pool, max_reward):
+    # Rufe die Ranking-Funktion einmal am Anfang auf
+    agent_ranks = determine_ranks(agent_pool, max_reward)
+
+    # Wir sortieren den Pool für die Ausgabe nach dem Ranking
+    sorted_agent_pool = sorted(agent_pool, key=lambda agent: agent_ranks[agent.id])
+
+    for agent in sorted_agent_pool:
+        if isinstance(agent, (QLearningAgent, SARSAAgent, WoLFPHC, PureAgent)):
+            # Hole den Rang aus dem vorberechneten Dictionary
+            rank = agent_ranks.get(agent.id, "N/A")
+
+            print(f"\n--- Platz {rank}: {agent.id} ---")
+            print(format_strategy_vector(agent.get_policy()))
+            print(f"Kooperationsrate: {agent.get_cooperation_rate():.2%}")
+
+            ratio = agent.get_total_reward() / max_reward
+            # Hier verwende ich die von dir gewünschte Funktion zur prozentualen Darstellung
+            percentage_str = f"{(ratio * 100):.1f}%".replace('.', ',')
+            print(f"Total Reward: {percentage_str} des Maximums")
+        else:
+            print(f"Agent {agent.id} ist kein bekannter Agententyp")
+
+
+def calculate_max_reward(num_matches, num_episodes_per_match, num_rounds_per_episode):
+    r1, r2 = _ipd_payoff(Action.COOPERATE, Action.COOPERATE)
+    return num_matches * num_episodes_per_match * num_rounds_per_episode * (r1 + r2)
+
+
+def determine_ranks(agent_pool: List, max_reward: float) -> Dict[str, int]:
+    """
+    Analysiert einen Pool von Agenten und weist ihnen Ränge basierend auf ihrem
+    prozentualen Gesamtgewinn zu.
+
+    Args:
+        agent_pool: Eine Liste von Agenten-Objekten.
+        max_reward: Der maximal mögliche Gewinn in der Simulation.
+
+    Returns:
+        Ein Dictionary, das Agenten-IDs auf ihren Rang abbildet {agent_id: rank}.
+    """
+    if not agent_pool or max_reward == 0:
+        return {}
+
+    # 1. Berechne die Performance für jeden Agenten
+    agent_performance = []
+    for agent in agent_pool:
+        ratio = agent.get_total_reward() / max_reward
+        agent_performance.append((ratio, agent))
+
+    # 2. Sortiere die Agenten absteigend nach ihrer Performance
+    # bei Gleichstand behält sorted() die ursprüngliche Reihenfolge bei
+    sorted_agents = sorted(agent_performance, key=lambda item: item[0], reverse=True)
+
+    # 3. Weise die Ränge zu
+    ranks = {}
+    for i, (ratio, agent) in enumerate(sorted_agents):
+        rank = i + 1
+        ranks[agent.id] = rank
+
+    return ranks
 
 class Evaluation:
 
@@ -164,6 +290,30 @@ class Evaluation:
         self.rewards_over_time = defaultdict(list)
 
         self.replay_history = []
+
+    def save_results(self, filepath: Path, final_cluster_data: dict, final_run_stats: dict):
+        """
+        Speichert die gesammelten Rohdaten der Simulation in einer Datei.
+        """
+        # Sammle alle wichtigen Daten in einem einzigen Dictionary
+        data_to_save = {
+            # Zeitreihen-Diagramme
+            'strategies_over_time': self.strategies_over_time,
+            'coop_rates_over_time': self.coop_rates_over_time,
+            'rewards_over_time': self.rewards_over_time,
+            'replay_history': self.replay_history,
+
+            # Rohdaten
+            'final_cluster_analysis': final_cluster_data,
+            'final_run_statistics': final_run_stats
+        }
+
+        try:
+            with open(filepath, 'wb') as f:
+                pickle.dump(data_to_save, f)
+            print(f"Ergebnisse erfolgreich gespeichert in: {filepath}")
+        except IOError as e:
+            print(f"Fehler beim Speichern der Ergebnisse: {e}")
 
     def record_replay_step(self, grid, active_players):
         """Speichert den Gitterzustand und die aktiven Spieler für einen Replay-Schritt."""
@@ -185,56 +335,56 @@ class Evaluation:
             self.coop_rates_over_time[agent_id].append((match_num, stats["coop_rate"]))
             self.rewards_over_time[agent_id].append((match_num, stats["reward"]))
 
-    def plot_strategies(self, agent_pool, num_matches):
-        """Plottet die Entwicklung der Strategievektoren π für jeden einzelnen Agenten."""
-        if not self.strategies_over_time: return
-
-        # Sortiere die Agenten-IDs, um eine konsistente Plot-Reihenfolge zu haben
-        sorted_agent_ids = sorted(self.strategies_over_time.keys())
-
-        num_agents = len(sorted_agent_ids)
-        fig, axs = plt.subplots(num_agents, 1, figsize=(12, 6 * num_agents), sharex=True)
-        if num_agents == 1: axs = [axs]
-
-        # Definiere ein Dictionary, das jeder Strategie einen einzigartigen Stil zuweist
-        labels = ["π(C|CC)", "π(C|CD)", "π(C|DC)", "π(C|DD)"]
-        style_map = {
-            labels[0]: {'linestyle': '-', 'marker': 'o', 'color': 'blue'},
-            labels[1]: {'linestyle': '--', 'marker': 's', 'color': 'red'},
-            labels[2]: {'linestyle': ':', 'marker': '^', 'color': 'green'},
-            labels[3]: {'linestyle': '-.', 'marker': 'v', 'color': 'purple'},
-        }
-
-        for ax, agent_id in zip(axs, sorted_agent_ids):
-            history = self.strategies_over_time[agent_id]
-
-            # Entpacke die Zeitstempel und Werte
-            timestamps, values = zip(*history)
-            values = np.array(values)
-
-            for i, label in enumerate(labels):
-                style = style_map[label]
-                # Füge die Stil-Argumente zum plot-Befehl hinzu
-                ax.plot(timestamps, values[:, i],
-                        label=label,
-                        drawstyle='steps-post',
-                        linestyle=style['linestyle'],
-                        marker=style['marker'],
-                        color=style['color'],
-                        markersize=4,
-                        markevery=0.1)  # Setze Marker nur alle 10% der Datenpunkte
-
-            ax.set_title(f"Strategieentwicklung von {agent_id}")
-            ax.set_ylabel("Kooperations-Wahrscheinlichkeit")
-            ax.legend()
-            ax.grid(True, linestyle="--", alpha=0.6)
-            ax.set_ylim(-0.05, 1.05)
-            # Setze die Achsengrenzen explizit für eine korrekte Darstellung
-            ax.set_xlim(0, num_matches)
-
-        axs[-1].set_xlabel("Match-Nummer")
-        plt.tight_layout()
-        plt.show()
+    #def plot_strategies(self, agent_pool, num_matches):
+    #    """Plottet die Entwicklung der Strategievektoren π für jeden einzelnen Agenten."""
+    #    if not self.strategies_over_time: return
+#
+    #    # Sortiere die Agenten-IDs, um eine konsistente Plot-Reihenfolge zu haben
+    #    sorted_agent_ids = sorted(self.strategies_over_time.keys())
+#
+    #    num_agents = len(sorted_agent_ids)
+    #    fig, axs = plt.subplots(num_agents, 1, figsize=(12, 6 * num_agents), sharex=True)
+    #    if num_agents == 1: axs = [axs]
+#
+    #    # Definiere ein Dictionary, das jeder Strategie einen einzigartigen Stil zuweist
+    #    labels = ["π(C|CC)", "π(C|CD)", "π(C|DC)", "π(C|DD)"]
+    #    style_map = {
+    #        labels[0]: {'linestyle': '-', 'marker': 'o', 'color': 'blue'},
+    #        labels[1]: {'linestyle': '--', 'marker': 's', 'color': 'red'},
+    #        labels[2]: {'linestyle': ':', 'marker': '^', 'color': 'green'},
+    #        labels[3]: {'linestyle': '-.', 'marker': 'v', 'color': 'purple'},
+    #    }
+#
+    #    for ax, agent_id in zip(axs, sorted_agent_ids):
+    #        history = self.strategies_over_time[agent_id]
+#
+    #        # Entpacke die Zeitstempel und Werte
+    #        timestamps, values = zip(*history)
+    #        values = np.array(values)
+#
+    #        for i, label in enumerate(labels):
+    #            style = style_map[label]
+    #            # Füge die Stil-Argumente zum plot-Befehl hinzu
+    #            ax.plot(timestamps, values[:, i],
+    #                    label=label,
+    #                    drawstyle='steps-post',
+    #                    linestyle=style['linestyle'],
+    #                    marker=style['marker'],
+    #                    color=style['color'],
+    #                    markersize=4,
+    #                    markevery=0.1)  # Setze Marker nur alle 10% der Datenpunkte
+#
+    #        ax.set_title(f"Strategieentwicklung von {agent_id}")
+    #        ax.set_ylabel("Kooperations-Wahrscheinlichkeit")
+    #        ax.legend()
+    #        ax.grid(True, linestyle="--", alpha=0.6)
+    #        ax.set_ylim(-0.05, 1.05)
+    #        # Setze die Achsengrenzen explizit für eine korrekte Darstellung
+    #        ax.set_xlim(0, num_matches)
+#
+    #    axs[-1].set_xlabel("Match-Nummer")
+    #    plt.tight_layout()
+    #    plt.show()
 
 
     def plot_aggregated_strategies(self, agent_pool, num_matches):
@@ -382,53 +532,48 @@ class Evaluation:
 
     def analyze_final_clusters(self, final_grid):
         """
-        Analysiert die Cluster im finalen Gitterzustand und gibt Metriken aus.
-        Berechnet die Gesamtfläche und die Anzahl der Cluster pro Strategietyp.
+        Analysiert die Cluster im finalen Gitterzustand und gibt Metriken
+        als Dictionary zurück.
         """
         print("\n--- Analyse der finalen Cluster-Struktur ---")
-
         if final_grid is None or final_grid.size == 0:
             print("Fehler: Kein gültiges finales Gitter zur Analyse vorhanden.")
-            return
+            return {}
 
         grid_shape = final_grid.shape
         total_cells = grid_shape[0] * grid_shape[1]
 
-        # Schritt 1: Erstelle eine Matrix mit den Strategie-Typen (als Zahlen oder Strings)
-        # Wir verwenden hier die Farblogik, um einen Typ zu repräsentieren
+        # --- (Schritt 1 & 2: Cluster-Identifikation - bleiben unverändert) ---
         strategy_type_grid = np.zeros(grid_shape, dtype=object)
-        color_to_type_map = {  # Mapping von Farbe zu einem lesbaren Namen
-            RED: "Defector",
-            BLUE: "TFT-like",
-            GREEN: "Cooperator (ALLC)",
-            CYAN: "Cautious Coop.",
-            PURPLE: "WSLS",
-            ORANGE: "Polarized",
-            YELLOW: "Mixed/Learning",
-            GREY: "Unknown"
+        color_to_type_map = {
+            RED: "Defector", BLUE: "TFT-like", GREEN: "Cooperator (ALLC)",
+            CYAN: "Cautious Coop.", PURPLE: "WSLS", ORANGE: "Polarized",
+            YELLOW: "Mixed/Learning", GREY: "Unknown"
         }
-
         for y in range(grid_shape[0]):
             for x in range(grid_shape[1]):
                 agent = final_grid[y, x]
                 if agent:
-                    color = get_agent_color(agent)  # Deine Farbfunktion
+                    color = get_agent_color(agent)  #
                     strategy_type_grid[y, x] = color_to_type_map.get(color, "Unknown")
                 else:
-                    strategy_type_grid[y, x] = "Empty"  # Falls Gitter leer sein kann
+                    strategy_type_grid[y, x] = "Empty"
 
-        # Schritt 2: Identifiziere zusammenhängende Cluster gleichen Typs
-        # Wir brauchen eine numerische Repräsentation der Typen für label()
         unique_types = np.unique(strategy_type_grid)
         type_to_int = {type_name: i for i, type_name in enumerate(unique_types)}
         numeric_grid = np.vectorize(type_to_int.get)(strategy_type_grid)
-
-        # Führe das Labeling durch (erkennt Cluster gleicher Zahl)
         labeled_grid, num_total_clusters = label(numeric_grid)
-
         print(f"Insgesamt {num_total_clusters} Cluster gefunden.")
 
-        # Schritt 3: Berechne Metriken pro Strategietyp
+        # --- Schritt 3: Metriken berechnen UND speichern ---
+
+        # Ein Dictionary für die Ergebnisse
+        cluster_metrics = {
+            "total_clusters": num_total_clusters,
+            "area_by_type": {},
+            "count_by_type": {},
+            "max_cluster_size_by_type": {}
+        }
 
         # a) Gesamtfläche pro Typ
         print("\n**Gesamtfläche pro Strategietyp:**")
@@ -436,151 +581,183 @@ class Evaluation:
         for type_name, count in sorted(type_counts.items(), key=lambda item: item[1], reverse=True):
             percentage = (count / total_cells) * 100
             print(f"- {type_name}: {count} Zellen ({percentage:.1f}%)")
+            cluster_metrics["area_by_type"][type_name] = percentage  # Speichern
 
-        # b) Anzahl der Cluster pro Typ
-        print("\n**Anzahl der Cluster pro Strategietyp:**")
-        cluster_types = {}  # Speichert {cluster_id: type_name}
-        # Finde den Typ für jede Cluster-ID
-        # Wir nehmen den Typ des ersten Pixels jedes Labels (außer Label 0 = Hintergrund)
+        # b) & c) Anzahl und Größe der Cluster pro Typ
+        cluster_types = {}
         for cluster_id in range(1, num_total_clusters + 1):
-            # Finde die Koordinaten des ersten Pixels dieses Clusters
             coords = np.argwhere(labeled_grid == cluster_id)[0]
             cluster_types[cluster_id] = strategy_type_grid[tuple(coords)]
-
-        # Zähle, wie oft jeder Typ vorkommt
         cluster_type_counts = Counter(cluster_types.values())
-        for type_name, count in sorted(cluster_type_counts.items(), key=lambda item: item[1], reverse=True):
-            print(f"- {type_name}: {count} Cluster")
 
-        # (Optional) c) Größe des größten Clusters pro Typ
-        print("\n**Größe des größten Clusters pro Strategietyp:**")
-        # Berechne die Größe jedes Clusters
         cluster_sizes = sum_labels(np.ones_like(labeled_grid), labels=labeled_grid,
                                    index=np.arange(1, num_total_clusters + 1))
-
         max_sizes = {}
         for cluster_id, size in enumerate(cluster_sizes, start=1):
             type_name = cluster_types[cluster_id]
             if type_name not in max_sizes or size > max_sizes[type_name]:
-                max_sizes[type_name] = size
+                max_sizes[type_name] = int(size)  # Als int speichern
 
+        print("\n**Anzahl der Cluster pro Strategietyp:**")
+        for type_name, count in sorted(cluster_type_counts.items(), key=lambda item: item[1], reverse=True):
+            print(f"- {type_name}: {count} Cluster")
+            cluster_metrics["count_by_type"][type_name] = count  # Speichern
+
+        print("\n**Größe des größten Clusters pro Strategietyp:**")
         for type_name, max_size in sorted(max_sizes.items(), key=lambda item: item[1], reverse=True):
             print(f"- {type_name}: {max_size} Zellen")
+            cluster_metrics["max_cluster_size_by_type"][type_name] = max_size  # Speichern
 
-    def print_final_average_coop_rates(self, agent_pool):
+        return cluster_metrics
+
+    def calculate_and_print_final_stats(self, agent_pool, max_system_reward: float) -> dict:
         """
-        Berechnet und druckt die durchschnittliche Kooperationsrate über den
-        gesamten Simulationszeitraum für jeden Agententyp.
+        Berechnet, druckt UND ZURÜCKGIBT die finalen Durchschnittsstatistiken
+        (Koop-Raten und Rewards) für diesen einen Simulationslauf.
         """
-        if not self.coop_rates_over_time:
-            print("Keine Daten zur Kooperationsrate vorhanden.")
-            return
+        print("\n--- Finale Durchschnitts-Statistiken (Gesamter Zeitraum) ---")
 
-        print("\n--- Durchschnittliche Kooperationsrate (Gesamter Zeitraum) ---")
+        # Dictionaries zum Sammeln der Daten
+        coop_rates_by_type = defaultdict(list)
+        rewards_mean_by_type = defaultdict(list)  # Für Metrik 1
 
-        # Gruppiere die Verlaufsdaten nach dem Typ des Agenten
-        grouped_rates = _group_by_type(self.coop_rates_over_time, agent_pool)
+        all_agent_avg_coop_rates = []  # Für Metrik 3
+        all_agent_total_rewards = []  # Für Metrik 2
 
-        # Liste zum Speichern der Ergebnisse für eine eventuelle Sortierung
-        results = []
-
-        for agent_type, histories in grouped_rates.items():
-            # Liste für die Durchschnittsraten aller Agenten dieses Typs
-            type_averages = []
-
-            for history in histories:
-                # Extrahiere nur die Kooperationsraten (ignoriere Zeitstempel)
-                # Ignoriere den Initialwert bei t=0, falls vorhanden und nicht Teil des echten Verlaufs
-                if not history: continue
-
-                # Nimm alle Werte außer dem ersten (der bei t=0 oder t=-1 ist)
-                agent_rates = [rate for time, rate in history if time >= 0]
-
-                if agent_rates:  # Nur wenn der Agent gespielt hat
-                    # Berechne den Durchschnitt für diesen einen Agenten
-                    avg_rate_agent = np.mean(agent_rates)
-                    type_averages.append(avg_rate_agent)
-
-            if type_averages:  # Nur wenn Agenten dieses Typs gespielt haben
-                # Berechne den Durchschnitt über alle Agenten dieses Typs
-                avg_rate_type = np.mean(type_averages)
-                results.append((agent_type, avg_rate_type))
-            else:
-                results.append((agent_type, 0.0))  # Falls keine Daten für diesen Typ
-
-        # Sortiere die Ergebnisse nach der durchschnittlichen Rate (absteigend)
-        results.sort(key=lambda item: item[1], reverse=True)
-
-        # Gib die sortierten Ergebnisse aus
-        for agent_type, avg_rate in results:
-            print(f"- Typ '{agent_type}': {avg_rate:.2f}%")
-
-    def plot_reward_by_coop_category(self, agent_pool, num_bins=4):
-        """
-        Erstellt einen Boxplot mit relativen Kooperationsraten-Kategorien,
-        basierend auf der beobachteten Min/Max-Rate in der Simulation.
-
-        Args:
-            agent_pool: Die Liste der Agenten am Ende der Simulation.
-            num_bins (int): Die Anzahl der Kategorien (Bins).
-        """
-        print(f"\n--- Erstelle Boxplot: Reward vs. relative Kooperationsrate-Kategorie ({num_bins} Bins) ---")
-        if not agent_pool: return
-
-        data = []
-        # --- Datensammlung (wie zuvor) ---
+        # 1. Daten von jedem Agenten sammeln
         for agent in agent_pool:
-            avg_coop_rate = 0.0
+            agent_type = agent.__class__.__name__
+
+            # --- Kooperationsrate (für Metrik 3) ---
+            avg_rate_agent = 0.0
             if agent.id in self.coop_rates_over_time:
                 agent_rates = [rate for time, rate in self.coop_rates_over_time[agent.id] if time >= 0]
                 if agent_rates:
-                    avg_coop_rate = np.mean(agent_rates)
+                    avg_rate_agent = np.mean(agent_rates)
 
-            avg_reward_per_match = agent.get_total_reward_mean()
-            data.append({
-                "Avg Coop Rate (%)": avg_coop_rate,
-                "Avg Reward/Match": avg_reward_per_match,
-                "Agent Type": agent.__class__.__name__
-            })
+            coop_rates_by_type[agent_type].append(avg_rate_agent)
+            all_agent_avg_coop_rates.append(avg_rate_agent)
 
-        if not data: return
-        df = pd.DataFrame(data)
+            # --- Reward (für Metrik 1 & 2) ---
+            # Metrik 1: Durchschnittlicher Reward pro Match
+            rewards_mean_by_type[agent_type].append(agent.get_total_reward_mean())
 
-        # --- START DER ÄNDERUNG ---
-        # Verwende pd.cut, um N Bins basierend auf dem Datenbereich zu erstellen
-        try:
-            # pd.cut erstellt die Kategorienobjekte
-            cut_results, bin_edges_calculated = pd.cut(df['Avg Coop Rate (%)'], bins=num_bins, include_lowest=True,
-                                                       retbins=True)
-            df['Coop Category'] = cut_results
+            # Metrik 2: Absoluter Gesamt-Reward
+            all_agent_total_rewards.append(agent.get_total_reward())
 
-            # Erstelle lesbare Labels aus den berechneten Bin-Grenzen
-            bin_labels = [f"{bin_edges_calculated[i]:.1f}-{bin_edges_calculated[i + 1]:.1f}%" for i in range(num_bins)]
-            # Weise die Labels den Kategorien zu (wichtig für die x-Achse)
-            df['Coop Category'] = df['Coop Category'].cat.rename_categories(bin_labels)
+        # 2. Aggregieren und Ergebnisse speichern
+        final_stats = {
+            "coop_rate_by_type": {},
+            "reward_mean_by_type": {},
+            "coop_rate_global_mean": 0.0,
+            "reward_system_total_percent_of_max": 0.0
+        }
 
-        except ValueError:  # Fehlerbehandlung, falls alle Werte gleich sind
-            print("Warnung: Alle Agenten haben die gleiche Kooperationsrate. Boxplot nach Kategorie nicht sinnvoll.")
-            # ... (Fallback-Plot wie zuvor) ...
-            return
-        except IndexError:  # Fehlerbehandlung, falls zu wenige unique Werte für bins vorhanden
-            print(
-                f"Warnung: Zu wenige unterschiedliche Kooperationsraten ({df['Avg Coop Rate (%)'].nunique()}), um {num_bins} Bins zu bilden. Reduziere num_bins oder analysiere anders.")
-            return
-        # --- ENDE DER ÄNDERUNG ---
+        # --- Metrik 1: Durchschnittlicher Reward pro Match (pro Agententyp) ---
+        print("\n**1. Durchschnittlicher Reward pro Match (pro Agententyp):**")
+        sorted_rewards = sorted(rewards_mean_by_type.items(), key=lambda item: np.mean(item[1]), reverse=True)
+        for agent_type, rewards in sorted_rewards:
+            mean = np.mean(rewards)
+            final_stats["reward_mean_by_type"][agent_type] = float(mean)
+            print(f"- Typ '{agent_type}': {mean:.2f}")
 
-        # Erstelle den Boxplot (Rest bleibt gleich)
-        plt.figure(figsize=(12, 7))
-        sns.boxplot(x='Coop Category', y='Avg Reward/Match', data=df, hue="Agent Type", palette="Set2")
+        # --- Metrik 2: Absoluter System-Reward (als % des Max) ---
+        print("\n**2. Absoluter System-Reward (als % des theor. Maximums):**")
+        # ZÄHLER: Die Summe aller Rewards, die alle Agenten über die Zeit gesammelt haben
+        total_system_reward_achieved = np.sum(all_agent_total_rewards)
+        # NENNER: Der von Main.py übergebene, korrekt berechnete max_system_reward
+        if max_system_reward == 0: max_system_reward = 1
 
-        plt.title(f"Durchschnittlicher Reward pro Match nach Kooperationsrate ({num_bins} rel. Bins)")
-        plt.xlabel("Durchschnittliche Kooperationsrate (Gesamter Zeitraum)")
-        plt.ylabel("Avg. Reward / Match")
-        plt.legend(title="Agententyp", bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.grid(True, linestyle="--", alpha=0.6)
-        plt.xticks(rotation=45, ha='right')  # Labels drehen
-        plt.tight_layout()
-        plt.show()
+        system_percentage = (total_system_reward_achieved / max_system_reward) * 100
+
+        final_stats["reward_system_total_percent_of_max"] = float(system_percentage)
+        print(f"- System-Gesamtreward (Zähler): {total_system_reward_achieved:.0f}")
+        print(f"- Theoretisches System-Maximum (Nenner): {max_system_reward:.0f}")
+        print(f"- Erreichte Effizienz: {system_percentage:.2f}%")  # Sollte jetzt <= 100% sein
+
+        # --- Metrik 3: Durchschnittliche Kooperationsrate Gesamt ---
+        print("\n**3. Durchschnittliche Kooperationsrate (Gesamtsystem, über Zeit):**")
+        mean_coop_global = np.mean(all_agent_avg_coop_rates)
+        final_stats["coop_rate_global_mean"] = float(mean_coop_global)
+        print(f"- Alle Agenten: {mean_coop_global:.2f}%")
+
+        # (Detaillierte Aufschlüsselung der Koop-Rate pro Typ)
+        print("\n**Durchschnittliche Kooperationsrate (pro Typ, über Zeit):**")
+        sorted_rates = sorted(coop_rates_by_type.items(), key=lambda item: np.mean(item[1]), reverse=True)
+        for agent_type, rates in sorted_rates:
+            mean = np.mean(rates)
+            final_stats["coop_rate_by_type"][agent_type] = float(mean)
+            print(f"- Typ '{agent_type}': {mean:.2f}%")
+
+        # 3. Gib das finale Dictionary zurück
+        return final_stats
+
+    #def plot_reward_by_coop_category(self, agent_pool, num_bins=4):
+    #    """
+    #    Erstellt einen Boxplot mit relativen Kooperationsraten-Kategorien,
+    #    basierend auf der beobachteten Min/Max-Rate in der Simulation.
+#
+    #    Args:
+    #        agent_pool: Die Liste der Agenten am Ende der Simulation.
+    #        num_bins (int): Die Anzahl der Kategorien (Bins).
+    #    """
+    #    print(f"\n--- Erstelle Boxplot: Reward vs. relative Kooperationsrate-Kategorie ({num_bins} Bins) ---")
+    #    if not agent_pool: return
+#
+    #    data = []
+    #    # --- Datensammlung (wie zuvor) ---
+    #    for agent in agent_pool:
+    #        avg_coop_rate = 0.0
+    #        if agent.id in self.coop_rates_over_time:
+    #            agent_rates = [rate for time, rate in self.coop_rates_over_time[agent.id] if time >= 0]
+    #            if agent_rates:
+    #                avg_coop_rate = np.mean(agent_rates)
+#
+    #        avg_reward_per_match = agent.get_total_reward_mean()
+    #        data.append({
+    #            "Avg Coop Rate (%)": avg_coop_rate,
+    #            "Avg Reward/Match": avg_reward_per_match,
+    #            "Agent Type": agent.__class__.__name__
+    #        })
+#
+    #    if not data: return
+    #    df = pd.DataFrame(data)
+#
+    #
+    #    # Verwende pd.cut, um N Bins basierend auf dem Datenbereich zu erstellen
+    #    try:
+    #        # pd.cut erstellt die Kategorienobjekte
+    #        cut_results, bin_edges_calculated = pd.cut(df['Avg Coop Rate (%)'], bins=num_bins, include_lowest=True,
+    #                                                   retbins=True)
+    #        df['Coop Category'] = cut_results
+#
+    #        # Erstelle lesbare Labels aus den berechneten Bin-Grenzen
+    #        bin_labels = [f"{bin_edges_calculated[i]:.1f}-{bin_edges_calculated[i + 1]:.1f}%" for i in range(num_bins)]
+    #        # Weise die Labels den Kategorien zu (wichtig für die x-Achse)
+    #        df['Coop Category'] = df['Coop Category'].cat.rename_categories(bin_labels)
+#
+    #    except ValueError:  # Fehlerbehandlung, falls alle Werte gleich sind
+    #        print("Warnung: Alle Agenten haben die gleiche Kooperationsrate. Boxplot nach Kategorie nicht sinnvoll.")
+    #        # ... (Fallback-Plot wie zuvor) ...
+    #        return
+    #    except IndexError:  # Fehlerbehandlung, falls zu wenige unique Werte für bins vorhanden
+    #        print(
+    #            f"Warnung: Zu wenige unterschiedliche Kooperationsraten ({df['Avg Coop Rate (%)'].nunique()}), um {num_bins} Bins zu bilden. Reduziere num_bins oder analysiere anders.")
+    #        return
+    #
+#
+    #    # Erstelle den Boxplot (Rest bleibt gleich)
+    #    plt.figure(figsize=(12, 7))
+    #    sns.boxplot(x='Coop Category', y='Avg Reward/Match', data=df, hue="Agent Type", palette="Set2")
+#
+    #    plt.title(f"Durchschnittlicher Reward pro Match nach Kooperationsrate ({num_bins} rel. Bins)")
+    #    plt.xlabel("Durchschnittliche Kooperationsrate (Gesamter Zeitraum)")
+    #    plt.ylabel("Avg. Reward / Match")
+    #    plt.legend(title="Agententyp", bbox_to_anchor=(1.05, 1), loc='upper left')
+    #    plt.grid(True, linestyle="--", alpha=0.6)
+    #    plt.xticks(rotation=45, ha='right')  # Labels drehen
+    #    plt.tight_layout()
+    #    plt.show()
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++++++++++++++++++++++++++++++ RENDERING ++++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

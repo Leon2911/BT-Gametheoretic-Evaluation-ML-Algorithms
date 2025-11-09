@@ -2923,3 +2923,201 @@
 
 ---
 
+## Simulationslauf vom: 2025-11-07 21:02:53
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `1000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.05`
+- **gamma:** `0.95`
+- **epsilon:** `1.0`
+- **epsilon_decay:** `0.9995`
+- **min_epsilon:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-07 21:27:17
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `5000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `0`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.05`
+- **gamma:** `0.95`
+- **epsilon:** `1.0`
+- **epsilon_decay:** `0.9995`
+- **min_epsilon:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-07 21:28:46
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `5000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `1`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.05`
+- **gamma:** `0.95`
+- **epsilon:** `1.0`
+- **epsilon_decay:** `0.9995`
+- **min_epsilon:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-07 21:29:46
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `5000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `2`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.05`
+- **gamma:** `0.95`
+- **epsilon:** `1.0`
+- **epsilon_decay:** `0.9995`
+- **min_epsilon:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-07 21:31:28
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `5000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `3`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.05`
+- **gamma:** `0.95`
+- **epsilon:** `1.0`
+- **epsilon_decay:** `0.9995`
+- **min_epsilon:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-07 21:32:25
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `5000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `4`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.05`
+- **gamma:** `0.95`
+- **epsilon:** `1.0`
+- **epsilon_decay:** `0.9995`
+- **min_epsilon:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-08 19:38:42
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `5000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `5`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.05`
+- **gamma:** `0.95`
+- **epsilon:** `1.0`
+- **epsilon_decay:** `0.9995`
+- **min_epsilon:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-08 19:39:55
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `5000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `6`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.05`
+- **gamma:** `0.95`
+- **epsilon:** `1.0`
+- **epsilon_decay:** `0.9995`
+- **min_epsilon:** `0.01`
+
+---
+
+## Simulationslauf vom: 2025-11-08 19:41:59
+
+### Globale Parameter
+- **Begegnungsschema:** `SpatialGridScheme`
+- **Gittergröße:** `(10, 20)`
+- **Anzahl Matches/Duelle:** `5000`
+- **Runden pro Episode:** `200`
+- **Zufalls-Seed:** `7`
+
+### Agenten-Population
+- **QL:** `200`
+- **Gesamt:** `200` Agenten
+
+### Lern-Hyperparameter
+- **alpha:** `0.05`
+- **gamma:** `0.95`
+- **epsilon:** `1.0`
+- **epsilon_decay:** `0.9995`
+- **min_epsilon:** `0.01`
+
+---
+
