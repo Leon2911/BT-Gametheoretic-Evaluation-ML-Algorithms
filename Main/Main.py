@@ -20,7 +20,7 @@ simulation_params = {
     "num_matches": 60000,
     "num_episodes_per_match": 1,
     "num_rounds_per_episode": 200,
-    "seed": 1
+    "seed": 9
 }
 
 # Definiere die Lern-Hyperparameter für die Protokollierung
