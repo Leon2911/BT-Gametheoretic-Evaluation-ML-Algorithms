@@ -9,7 +9,8 @@ from Main.IGD_Setup.IPDEnv import IPDEnv
 from Main.Matchmakingschemes.MatchmakingScheme import SpatialGridScheme, calculate_grid_size, RandomPairingScheme
 from Main.SimulationSetup import GridFactory
 from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defector_invasion, layout_map_blank, \
-    layout_map_blank_softmax, layout_map_coop_start
+    layout_map_blank_softmax, layout_map_coop_start, layout_map_neighbor_visual_moore, \
+    layout_map_neighbor_visual_extened_moore, layout_map_neighbor_visual_von_neumann
 
 # === SIMULATION SETUP ===
 
@@ -17,10 +18,10 @@ from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defec
 LOG_FILE = "simulation_log.md"
 
 simulation_params = {
-    "num_matches": 60000,
+    "num_matches": 1000,
     "num_episodes_per_match": 1,
     "num_rounds_per_episode": 200,
-    "seed": 9
+    "seed": 0
 }
 
 # Definiere die Lern-Hyperparameter für die Protokollierung
@@ -29,10 +30,10 @@ learning_params = {
     "gamma": 0.95,
     "epsilon": 1.0,
     "epsilon_decay": 0.9995,
-    "min_epsilon": 0.01
+    "min_epsilon": 0.001
     #"temperature": 1.0,
     #"temperature_decay": 0.9995,
-    #"min_temperature": 0.01
+    #"min_temperature": 0.001
 }
 
 num_matches = simulation_params["num_matches"]
@@ -75,6 +76,9 @@ cluster_requests = [
 #layout_map = layout_map_defector_invasion
 #layout_map = layout_map_blank_softmax
 #layout_map = layout_map_coop_start
+#layout_map = layout_map_neighbor_visual_von_neumann
+#layout_map = layout_map_neighbor_visual_moore
+#layout_map = layout_map_neighbor_visual_extened_moore
 layout_map = layout_map_blank
 
 grid, agent_pool, agent_counts = GridFactory.create_from_layout(layout_map)
@@ -100,7 +104,7 @@ for agent in agent_pool:
 
 # Record the state before any matches have been played (at time t=-1)
 evaluation.record(initial_results, -1)
-
+sampling_rate = 100
 # === INITIALISIERE MATCHMAKING-SCHEMA ===
 
 # Random pairing scheme
@@ -110,7 +114,7 @@ evaluation.record(initial_results, -1)
 scheme = SpatialGridScheme(neighborhood_type="moore")
 
 
-#evaluation.record_replay_step(grid, active_players=(None, None))
+evaluation.record_replay_step(grid, active_players=(None, None), current_epsilon=1.0)
 
 # === SIMULATIONS-PARAMETER LOGGEN ===
 all_params = {
@@ -207,10 +211,10 @@ for match_num in range(num_matches):
         }
     evaluation.record(results, match_num)
 
-    sampling_rate = 100
+
 
     if match_num % sampling_rate == 0:
-        evaluation.record_replay_step(grid, active_players=(agent_p1, agent_p2))
+        evaluation.record_replay_step(grid, active_players=(agent_p1, agent_p2), current_epsilon=agent_p1.epsilon)
 
     #print_results(agent_pool, max_reward)
 
@@ -218,7 +222,7 @@ print("\n++++++Simulation beendet.++++++")
 
 # === FINALE ANALYSE ===
 print("\n--- Finale Strategien der Agenten im Pool ---")
-print_results(agent_pool, max_reward)
+print_results(agent_pool)
 final_run_stats = evaluation.calculate_and_print_final_stats(agent_pool, max_reward)
 
 if evaluation.replay_history:
@@ -244,4 +248,4 @@ output_filename = OUTPUT_DIR / f"run_data_seed_{SEED}.pkl"
 evaluation.save_results(output_filename, cluster_results, final_run_stats)
 #######################################################################
 
-evaluation.render_interactive_grid_replay(cell_size=50)
+evaluation.render_interactive_grid_replay(cell_size=50, sampling_rate=sampling_rate)

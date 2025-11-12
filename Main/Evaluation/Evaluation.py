@@ -46,7 +46,7 @@ def get_agent_color(agent) -> tuple[int, int, int]:
     """
     if isinstance(agent, PureAgent):
         if agent.strategy_type == PureStrategy.ALWAYSDEFECT:
-            return RED
+            return GREY #RED
         elif agent.strategy_type == PureStrategy.TITFORTAT:
             return BLUE
         elif agent.strategy_type == PureStrategy.ALWAYSCOOPERATE:
@@ -219,9 +219,9 @@ def log_simulation_results(filepath: str, final_run_stats: dict, final_cluster_d
     except IOError as e:
         print(f"Fehler beim Schreiben der Ergebnis-Log-Datei: {e}")
 
-def print_results(agent_pool, max_reward):
+def print_results(agent_pool):
     # Rufe die Ranking-Funktion einmal am Anfang auf
-    agent_ranks = determine_ranks(agent_pool, max_reward)
+    agent_ranks = determine_ranks(agent_pool)
 
     # Wir sortieren den Pool für die Ausgabe nach dem Ranking
     sorted_agent_pool = sorted(agent_pool, key=lambda agent: agent_ranks[agent.id])
@@ -235,10 +235,18 @@ def print_results(agent_pool, max_reward):
             print(format_strategy_vector(agent.get_policy()))
             print(f"Kooperationsrate: {agent.get_cooperation_rate():.2%}")
 
-            ratio = agent.get_total_reward() / max_reward
-            # Hier verwende ich die von dir gewünschte Funktion zur prozentualen Darstellung
-            percentage_str = f"{(ratio * 100):.1f}%".replace('.', ',')
-            print(f"Total Reward: {percentage_str} des Maximums")
+            #ratio = agent.get_total_reward() / max_reward
+            ## Hier verwende ich die von dir gewünschte Funktion zur prozentualen Darstellung
+            #percentage_str = f"{(ratio * 100):.1f}%".replace('.', ',')
+            #print(f"Total Reward: {percentage_str} des Maximums")
+
+            total_matches_played = agent.match_count
+            if total_matches_played == 0:
+                avg_reward_per_match = 0.0
+            else:
+                avg_reward_per_match = agent.get_total_reward() / total_matches_played
+
+            print(f"Avg. Reward/Match: {avg_reward_per_match:.3f}")
         else:
             print(f"Agent {agent.id} ist kein bekannter Agententyp")
 
@@ -248,34 +256,40 @@ def calculate_max_reward(num_matches, num_episodes_per_match, num_rounds_per_epi
     return num_matches * num_episodes_per_match * num_rounds_per_episode * (r1 + r2)
 
 
-def determine_ranks(agent_pool: List, max_reward: float) -> Dict[str, int]:
+def determine_ranks(agent_pool: List) -> Dict[str, int]:
     """
     Analysiert einen Pool von Agenten und weist ihnen Ränge basierend auf ihrem
-    prozentualen Gesamtgewinn zu.
+    durchschnittlichen Reward PRO RUNDE zu, um Randspieler nicht zu benachteiligen.
 
     Args:
         agent_pool: Eine Liste von Agenten-Objekten.
-        max_reward: Der maximal mögliche Gewinn in der Simulation.
 
     Returns:
         Ein Dictionary, das Agenten-IDs auf ihren Rang abbildet {agent_id: rank}.
     """
-    if not agent_pool or max_reward == 0:
+    if not agent_pool:
         return {}
 
-    # 1. Berechne die Performance für jeden Agenten
+    # 1. Berechne die Performance (Reward pro Runde) für jeden Agenten
     agent_performance = []
     for agent in agent_pool:
-        ratio = agent.get_total_reward() / max_reward
-        agent_performance.append((ratio, agent))
+        # agent.action_count zählt die Gesamtzahl der Runden, die der Agent gespielt hat
+        total_rounds_played = agent.action_count
 
-    # 2. Sortiere die Agenten absteigend nach ihrer Performance
-    # bei Gleichstand behält sorted() die ursprüngliche Reihenfolge bei
+        if total_rounds_played == 0:
+            avg_reward_per_round = 0.0
+        else:
+            # Berechne den durchschnittlichen Reward pro gespielter Runde
+            avg_reward_per_round = agent.get_total_reward() / total_rounds_played
+
+        agent_performance.append((avg_reward_per_round, agent))
+
+    # 2. Sortiere die Agenten absteigend nach ihrer Performance (Reward pro Runde)
     sorted_agents = sorted(agent_performance, key=lambda item: item[0], reverse=True)
 
     # 3. Weise die Ränge zu
     ranks = {}
-    for i, (ratio, agent) in enumerate(sorted_agents):
+    for i, (performance_score, agent) in enumerate(sorted_agents):
         rank = i + 1
         ranks[agent.id] = rank
 
@@ -315,11 +329,16 @@ class Evaluation:
         except IOError as e:
             print(f"Fehler beim Speichern der Ergebnisse: {e}")
 
-    def record_replay_step(self, grid, active_players):
+    def record_replay_step(self, grid, active_players, current_epsilon):
         """Speichert den Gitterzustand und die aktiven Spieler für einen Replay-Schritt."""
+
+        p1_id = active_players[0].id if active_players[0] is not None else None
+        p2_id = active_players[1].id if active_players[1] is not None else None
+
         self.replay_history.append({
             "grid": deepcopy(grid),
-            "players": (active_players[0].id, active_players[1].id)
+            "players": (p1_id, p2_id),
+            "epsilon": current_epsilon
         })
 
     def record(self, agents_strategies: dict, match_num: int):
@@ -618,39 +637,55 @@ class Evaluation:
         print("\n--- Finale Durchschnitts-Statistiken (Gesamter Zeitraum) ---")
 
         # Dictionaries zum Sammeln der Daten
-        coop_rates_by_type = defaultdict(list)
-        rewards_mean_by_type = defaultdict(list)  # Für Metrik 1
+        coop_rates_by_type_mean = defaultdict(list)  # Für Durchschnitt über Zeit
+        coop_rates_by_type_final = defaultdict(list)  # Für finalen Snapshot
+        rewards_mean_by_type = defaultdict(list)  # Metrik 1
 
-        all_agent_avg_coop_rates = []  # Für Metrik 3
-        all_agent_total_rewards = []  # Für Metrik 2
+        all_agent_avg_coop_rates_mean = []  # Für Metrik 3 (global, Durchschnitt)
+        all_agent_avg_coop_rates_final = []  # Für neue Metrik (global, Snapshot)
+        all_agent_total_rewards = []  # Für Metrik 2 (global, Absolut)
+        all_agent_avg_rewards_per_match = []  # Für globalen Avg-Reward/Match
 
         # 1. Daten von jedem Agenten sammeln
         for agent in agent_pool:
             agent_type = agent.__class__.__name__
+            avg_rate_agent_mean = 0.0
+            avg_rate_agent_final = 0.0
 
-            # --- Kooperationsrate (für Metrik 3) ---
-            avg_rate_agent = 0.0
             if agent.id in self.coop_rates_over_time:
-                agent_rates = [rate for time, rate in self.coop_rates_over_time[agent.id] if time >= 0]
-                if agent_rates:
-                    avg_rate_agent = np.mean(agent_rates)
+                history = self.coop_rates_over_time[agent.id]
+                if history:  # Stelle sicher, dass Historie nicht leer ist
+                    # Durchschnitt über die Zeit
+                    agent_rates = [rate for time, rate in history if time >= 0]
+                    if agent_rates:
+                        avg_rate_agent_mean = np.mean(agent_rates)
 
-            coop_rates_by_type[agent_type].append(avg_rate_agent)
-            all_agent_avg_coop_rates.append(avg_rate_agent)
+                    # Finaler Snapshot-Wert
+                    avg_rate_agent_final = history[-1][1]
 
-            # --- Reward (für Metrik 1 & 2) ---
+            coop_rates_by_type_mean[agent_type].append(avg_rate_agent_mean)
+            coop_rates_by_type_final[agent_type].append(avg_rate_agent_final)
+            all_agent_avg_coop_rates_mean.append(avg_rate_agent_mean)
+            all_agent_avg_coop_rates_final.append(avg_rate_agent_final)
+
+            # --- Reward (Metrik 1 & 2) ---
             # Metrik 1: Durchschnittlicher Reward pro Match
-            rewards_mean_by_type[agent_type].append(agent.get_total_reward_mean())
+            avg_reward_agent_mean_per_match = agent.get_total_reward_mean()
+            rewards_mean_by_type[agent_type].append(avg_reward_agent_mean_per_match)
+            all_agent_avg_rewards_per_match.append(avg_reward_agent_mean_per_match)
 
             # Metrik 2: Absoluter Gesamt-Reward
             all_agent_total_rewards.append(agent.get_total_reward())
 
         # 2. Aggregieren und Ergebnisse speichern
         final_stats = {
-            "coop_rate_by_type": {},
+            "coop_rate_by_type_mean": {},
+            "coop_rate_by_type_final": {},
             "reward_mean_by_type": {},
             "coop_rate_global_mean": 0.0,
-            "reward_system_total_percent_of_max": 0.0
+            "coop_rate_global_final": 0.0,
+            "reward_system_total_percent_of_max": 0.0,
+            "reward_mean_global": 0.0  # Avg. Reward pro Agent/Match
         }
 
         # --- Metrik 1: Durchschnittlicher Reward pro Match (pro Agententyp) ---
@@ -661,32 +696,49 @@ class Evaluation:
             final_stats["reward_mean_by_type"][agent_type] = float(mean)
             print(f"- Typ '{agent_type}': {mean:.2f}")
 
+        # (Globaler Avg Reward pro Agent/Match)
+        mean_reward_global = np.mean(all_agent_avg_rewards_per_match)
+        final_stats["reward_mean_global"] = float(mean_reward_global)
+
         # --- Metrik 2: Absoluter System-Reward (als % des Max) ---
         print("\n**2. Absoluter System-Reward (als % des theor. Maximums):**")
-        # ZÄHLER: Die Summe aller Rewards, die alle Agenten über die Zeit gesammelt haben
         total_system_reward_achieved = np.sum(all_agent_total_rewards)
-        # NENNER: Der von Main.py übergebene, korrekt berechnete max_system_reward
-        if max_system_reward == 0: max_system_reward = 1
+        if max_system_reward == 0: max_system_reward = 1  # Division durch Null verhindern
 
         system_percentage = (total_system_reward_achieved / max_system_reward) * 100
 
         final_stats["reward_system_total_percent_of_max"] = float(system_percentage)
         print(f"- System-Gesamtreward (Zähler): {total_system_reward_achieved:.0f}")
         print(f"- Theoretisches System-Maximum (Nenner): {max_system_reward:.0f}")
-        print(f"- Erreichte Effizienz: {system_percentage:.2f}%")  # Sollte jetzt <= 100% sein
+        print(f"- Erreichte Effizienz: {system_percentage:.2f}%")
+        print(f"- (Avg. Reward pro Agent/Match: {mean_reward_global:.2f})")
 
-        # --- Metrik 3: Durchschnittliche Kooperationsrate Gesamt ---
+        # --- Metrik 3: Durchschnittliche Kooperationsrate Gesamt (Über Zeit) ---
         print("\n**3. Durchschnittliche Kooperationsrate (Gesamtsystem, über Zeit):**")
-        mean_coop_global = np.mean(all_agent_avg_coop_rates)
-        final_stats["coop_rate_global_mean"] = float(mean_coop_global)
-        print(f"- Alle Agenten: {mean_coop_global:.2f}%")
+        mean_coop_global_mean = np.mean(all_agent_avg_coop_rates_mean)
+        final_stats["coop_rate_global_mean"] = float(mean_coop_global_mean)
+        print(f"- Alle Agenten (Durchschnitt): {mean_coop_global_mean:.2f}%")
 
-        # (Detaillierte Aufschlüsselung der Koop-Rate pro Typ)
-        print("\n**Durchschnittliche Kooperationsrate (pro Typ, über Zeit):**")
-        sorted_rates = sorted(coop_rates_by_type.items(), key=lambda item: np.mean(item[1]), reverse=True)
-        for agent_type, rates in sorted_rates:
+        # --- Metrik 4: Finale Kooperationsrate Gesamt (Snapshot) ---
+        print("\n**4. Finale Kooperationsrate (Gesamtsystem, Snapshot am Ende):**")
+        mean_coop_global_final = np.mean(all_agent_avg_coop_rates_final)
+        final_stats["coop_rate_global_final"] = float(mean_coop_global_final)
+        print(f"- Alle Agenten (Snapshot): {mean_coop_global_final:.2f}%")
+
+        # (Detaillierte Aufschlüsselung der Koop-Rate pro Typ - Durchschnitt)
+        print("\n**Detailliert: Durchschnittliche Kooperationsrate (pro Typ, über Zeit):**")
+        sorted_rates_mean = sorted(coop_rates_by_type_mean.items(), key=lambda item: np.mean(item[1]), reverse=True)
+        for agent_type, rates in sorted_rates_mean:
             mean = np.mean(rates)
-            final_stats["coop_rate_by_type"][agent_type] = float(mean)
+            final_stats["coop_rate_by_type_mean"][agent_type] = float(mean)
+            print(f"- Typ '{agent_type}': {mean:.2f}%")
+
+        # (Detaillierte Aufschlüsselung der Koop-Rate pro Typ - Snapshot)
+        print("\n**Detailliert: Finale Kooperationsrate (pro Typ, Snapshot am Ende):**")
+        sorted_rates_final = sorted(coop_rates_by_type_final.items(), key=lambda item: np.mean(item[1]), reverse=True)
+        for agent_type, rates in sorted_rates_final:
+            mean = np.mean(rates)
+            final_stats["coop_rate_by_type_final"][agent_type] = float(mean)
             print(f"- Typ '{agent_type}': {mean:.2f}%")
 
         # 3. Gib das finale Dictionary zurück
@@ -762,7 +814,7 @@ class Evaluation:
 # +++++++++++++++++++++++++++++++ RENDERING ++++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    def render_interactive_grid_replay(self, cell_size=30):
+    def render_interactive_grid_replay(self, cell_size=30, sampling_rate=100):
         """
         Startet ein interaktives Dashboard mit präzisem Layout und allen Features.
         """
@@ -842,6 +894,7 @@ class Evaluation:
             current_data = self.replay_history[current_step]
             grid_to_draw = current_data["grid"]
             active_players = current_data["players"]
+            current_epsilon = current_data.get("epsilon", 0.0)
 
             # --- ZEICHNEN DER 4 PANELS ---
 
@@ -898,11 +951,12 @@ class Evaluation:
 
 
             # Info-Leiste (Unten)
-            step_text = f"Match: {current_step}/{len(self.replay_history) - 1}"
+            step_text = f"Match: {current_step * sampling_rate}/{(len(self.replay_history) - 1) * sampling_rate}"
             player_text = "| Startzustand"
             if current_step > 0 and active_players[0] is not None:
                 player_text = f"| Aktuelles Duell: {active_players[0]} vs. {active_players[1]}"
-            info_text = f"{step_text} {player_text}"
+            epsilon_text = f"| Epsilon: {current_epsilon:.4f}"
+            info_text = f"{step_text} {player_text} {epsilon_text}"
             text_surface = font.render(info_text, True, (255, 255, 255))
             screen.blit(text_surface, (10, screen_height - 35))
 
@@ -921,7 +975,7 @@ class Evaluation:
         panel_rect = pygame.Rect(panel_x_start, 0, screen.get_width() - panel_x_start, screen.get_height())
 
         # Zeichne den Titel (fixe Position)
-        title_surface = title_font.render("Agenten-Strategien (π)", True, (255, 255, 255))
+        title_surface = title_font.render("Agenten-Strategien (p)", True, (255, 255, 255)) # π
         screen.blit(title_surface, (panel_x_start + 10, 10))
 
         y_start = 40

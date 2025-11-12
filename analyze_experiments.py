@@ -8,7 +8,7 @@ from typing import List, Dict, Any
 
 # --- Konfiguration ---
 SIMULATION_DIR = "Ergebnisse/Baseline_Setup/Datacollection"  # Der Ordner, in dem deine .pkl-Dateien liegen
-NUM_MATCHES = 60000  # Muss mit deiner Main.py übereinstimmen
+NUM_MATCHES = 80000  # Muss mit deiner Main.py übereinstimmen
 
 
 # === METHODE 1: DATEN LADEN ===
@@ -205,8 +205,11 @@ def aggregate_and_print_final_stats(all_runs_data: List[Dict]):
     final_avg_rewards_by_type = defaultdict(list)
     # Für Metrik 2: Absoluter System-Reward (als % des Max)
     final_system_efficiency = []
-    # Für Metrik 3: Durchschnittliche Kooperationsrate (Gesamtsystem)
-    final_avg_coop_rates_global = []
+    # Für Metrik 3: Durchschnittliche Kooperationsrate (Gesamtsystem, über Zeit)
+    final_avg_coop_rates_global_mean = []
+
+    # Für Metrik 4: Finale Kooperationsrate (Gesamtsystem, Snapshot)
+    final_avg_coop_rates_global_final = []
 
     # (Zusätzliche Metriken, die wir auch sammeln)
     final_avg_coop_rates_by_type = defaultdict(list)
@@ -226,10 +229,11 @@ def aggregate_and_print_final_stats(all_runs_data: List[Dict]):
             print("Warnung: 'final_run_statistics' in .pkl-Datei nicht gefunden. Überspringe Lauf.")
             continue
 
-        # 1. Sammle die Kooperationsraten
-        for agent_type, rate in stats.get('coop_rate_by_type', {}).items():
+        # 1. Sammle die Kooperationsraten (Durchschnitt und Final)
+        for agent_type, rate in stats.get('coop_rate_by_type_mean', {}).items():
             final_avg_coop_rates_by_type[agent_type].append(rate)
-        final_avg_coop_rates_global.append(stats.get('coop_rate_global_mean', 0.0))
+        final_avg_coop_rates_global_mean.append(stats.get('coop_rate_global_mean', 0.0))
+        final_avg_coop_rates_global_final.append(stats.get('coop_rate_global_final', 0.0))
 
         # 2. Sammle die Reward-Metriken
         for agent_type, reward in stats.get('reward_mean_by_type', {}).items():
@@ -270,16 +274,24 @@ def aggregate_and_print_final_stats(all_runs_data: List[Dict]):
     else:
         print("Keine System-Effizienz-Daten gefunden.")
 
-    # --- METRIK 3: Durchschnittliche Kooperationsrate (Gesamtsystem) ---
+    # --- METRIK 3: Durchschnittliche Kooperationsrate (Gesamtsystem, über Zeit) ---
     print("\n**3. Durchschnittliche Kooperationsrate (Gesamtsystem, über Zeit):**")
-    if final_avg_coop_rates_global:
+    if final_avg_coop_rates_global_mean:
         print(
-            f"- Alle Agenten: {np.mean(final_avg_coop_rates_global):.2f}% (± {np.std(final_avg_coop_rates_global):.2f})")
+            f"- Alle Agenten (Durchschnitt): {np.mean(final_avg_coop_rates_global_mean):.2f}% (± {np.std(final_avg_coop_rates_global_mean):.2f})")
     else:
-        print("Keine globalen Kooperationsraten-Daten gefunden.")
+        print("Keine globalen Kooperationsraten-Daten (Durchschnitt) gefunden.")
+
+    # --- METRIK 4: Finale Kooperationsrate (Gesamtsystem, Snapshot) ---
+    print("\n**4. Finale Kooperationsrate (Gesamtsystem, Snapshot am Ende):**")
+    if final_avg_coop_rates_global_final:
+        print(
+            f"- Alle Agenten (Snapshot): {np.mean(final_avg_coop_rates_global_final):.2f}% (± {np.std(final_avg_coop_rates_global_final):.2f})")
+    else:
+        print("Keine globalen Kooperationsraten-Daten (Snapshot) gefunden.")
 
     # (Detaillierte Aufschlüsselung der Koop-Rate pro Typ)
-    print("\n**Durchschnittliche Kooperationsrate (pro Typ, über Zeit):**")
+    print("\n**Detailliert: Durchschnittliche Kooperationsrate (pro Typ, über Zeit):**")
     if final_avg_coop_rates_by_type:
         sorted_rates = sorted(final_avg_coop_rates_by_type.items(), key=lambda item: np.mean(item[1]), reverse=True)
         for agent_type, rates in sorted_rates:

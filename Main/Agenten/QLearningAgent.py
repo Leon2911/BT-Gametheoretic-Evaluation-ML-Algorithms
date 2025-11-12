@@ -11,8 +11,8 @@ from Main.IGD_Setup.Action import Action
 
 class QLearningAgent(BaseAgent):
     def __init__(self, n_states=4, n_actions=2, alpha=0.05, gamma=0.95, policy="Epsilon-Greedy",
-                 temperature=1.0, temperature_decay=0.9995, min_temperature=0.01,
-                 epsilon=1.0, epsilon_decay=0.9995, min_epsilon=0.01, q_table=None):
+                 temperature=1.0, temperature_decay=0.9995, min_temperature=0.001,
+                 epsilon=1.0, epsilon_decay=0.9995, min_epsilon=0.001, q_table=None):
         """
         Q-Learning agent with Softmax Policy
 
@@ -108,8 +108,10 @@ class QLearningAgent(BaseAgent):
         random.shuffle(experience_buffer)
 
         for obs, action, reward, next_obs, done in experience_buffer:
+        #for obs, action, reward, next_obs, done in experience_buffer:
             # Calls its own optimize method
             self.optimize(obs, action.value, reward, next_obs, done)
+
 
             if self.policy == "Epsilon-Greedy":
                 self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
