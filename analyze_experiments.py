@@ -8,7 +8,7 @@ from typing import List, Dict, Any
 
 # --- Konfiguration ---
 SIMULATION_DIR = "Ergebnisse/Baseline_Setup/Datacollection"  # Der Ordner, in dem deine .pkl-Dateien liegen
-NUM_MATCHES = 80000  # Muss mit deiner Main.py übereinstimmen
+NUM_MATCHES = 200000  # Muss mit deiner Main.py übereinstimmen
 
 
 # === METHODE 1: DATEN LADEN ===
@@ -37,7 +37,7 @@ def get_agent_type_by_id(agent_id: str) -> str:
         return "SARSAAgent"
     if agent_id.startswith("Pure_"):
         return "PureAgent"
-    return "Unknown"
+    return "QLearningAgent" # Eigentlich Unknown aber das funkiontiert noch nicht
 
 
 def align_time_series(histories: list, all_times: list, num_metrics=1):
@@ -105,9 +105,6 @@ def aggregate_runs_to_means(all_runs_data: List[Dict]) -> Dict:
 
         final_aggregated_data[data_key] = results_for_key
         final_aggregated_data['all_times'] = all_times  # Speichere den Zeitstrahl
-
-    # (Hier kannst du die Logik für die Aggregation der Cluster-Daten und Boxplots hinzufügen)
-    # ...
 
     return final_aggregated_data
 

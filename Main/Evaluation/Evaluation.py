@@ -1,4 +1,5 @@
 import datetime
+import os
 from copy import deepcopy
 from pathlib import Path
 
@@ -17,8 +18,6 @@ from Main.Agenten.QLearningAgent import QLearningAgent
 from Main.Agenten.SARSAAgent import SARSAAgent
 from scipy.ndimage import label, sum_labels
 import pickle
-import seaborn as sns
-import pandas as pd
 
 from Main.Agenten.WoLF_PHC_Agent import WoLFPHC
 from Main.IGD_Setup.Action import Action
@@ -270,6 +269,7 @@ def determine_ranks(agent_pool: List) -> Dict[str, int]:
     if not agent_pool:
         return {}
 
+# TODO action.count durch match.count ersetzen
     # 1. Berechne die Performance (Reward pro Runde) für jeden Agenten
     agent_performance = []
     for agent in agent_pool:
@@ -744,86 +744,20 @@ class Evaluation:
         # 3. Gib das finale Dictionary zurück
         return final_stats
 
-    #def plot_reward_by_coop_category(self, agent_pool, num_bins=4):
-    #    """
-    #    Erstellt einen Boxplot mit relativen Kooperationsraten-Kategorien,
-    #    basierend auf der beobachteten Min/Max-Rate in der Simulation.
-#
-    #    Args:
-    #        agent_pool: Die Liste der Agenten am Ende der Simulation.
-    #        num_bins (int): Die Anzahl der Kategorien (Bins).
-    #    """
-    #    print(f"\n--- Erstelle Boxplot: Reward vs. relative Kooperationsrate-Kategorie ({num_bins} Bins) ---")
-    #    if not agent_pool: return
-#
-    #    data = []
-    #    # --- Datensammlung (wie zuvor) ---
-    #    for agent in agent_pool:
-    #        avg_coop_rate = 0.0
-    #        if agent.id in self.coop_rates_over_time:
-    #            agent_rates = [rate for time, rate in self.coop_rates_over_time[agent.id] if time >= 0]
-    #            if agent_rates:
-    #                avg_coop_rate = np.mean(agent_rates)
-#
-    #        avg_reward_per_match = agent.get_total_reward_mean()
-    #        data.append({
-    #            "Avg Coop Rate (%)": avg_coop_rate,
-    #            "Avg Reward/Match": avg_reward_per_match,
-    #            "Agent Type": agent.__class__.__name__
-    #        })
-#
-    #    if not data: return
-    #    df = pd.DataFrame(data)
-#
-    #
-    #    # Verwende pd.cut, um N Bins basierend auf dem Datenbereich zu erstellen
-    #    try:
-    #        # pd.cut erstellt die Kategorienobjekte
-    #        cut_results, bin_edges_calculated = pd.cut(df['Avg Coop Rate (%)'], bins=num_bins, include_lowest=True,
-    #                                                   retbins=True)
-    #        df['Coop Category'] = cut_results
-#
-    #        # Erstelle lesbare Labels aus den berechneten Bin-Grenzen
-    #        bin_labels = [f"{bin_edges_calculated[i]:.1f}-{bin_edges_calculated[i + 1]:.1f}%" for i in range(num_bins)]
-    #        # Weise die Labels den Kategorien zu (wichtig für die x-Achse)
-    #        df['Coop Category'] = df['Coop Category'].cat.rename_categories(bin_labels)
-#
-    #    except ValueError:  # Fehlerbehandlung, falls alle Werte gleich sind
-    #        print("Warnung: Alle Agenten haben die gleiche Kooperationsrate. Boxplot nach Kategorie nicht sinnvoll.")
-    #        # ... (Fallback-Plot wie zuvor) ...
-    #        return
-    #    except IndexError:  # Fehlerbehandlung, falls zu wenige unique Werte für bins vorhanden
-    #        print(
-    #            f"Warnung: Zu wenige unterschiedliche Kooperationsraten ({df['Avg Coop Rate (%)'].nunique()}), um {num_bins} Bins zu bilden. Reduziere num_bins oder analysiere anders.")
-    #        return
-    #
-#
-    #    # Erstelle den Boxplot (Rest bleibt gleich)
-    #    plt.figure(figsize=(12, 7))
-    #    sns.boxplot(x='Coop Category', y='Avg Reward/Match', data=df, hue="Agent Type", palette="Set2")
-#
-    #    plt.title(f"Durchschnittlicher Reward pro Match nach Kooperationsrate ({num_bins} rel. Bins)")
-    #    plt.xlabel("Durchschnittliche Kooperationsrate (Gesamter Zeitraum)")
-    #    plt.ylabel("Avg. Reward / Match")
-    #    plt.legend(title="Agententyp", bbox_to_anchor=(1.05, 1), loc='upper left')
-    #    plt.grid(True, linestyle="--", alpha=0.6)
-    #    plt.xticks(rotation=45, ha='right')  # Labels drehen
-    #    plt.tight_layout()
-    #    plt.show()
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # +++++++++++++++++++++++++++++++ RENDERING ++++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    def render_interactive_grid_replay(self, cell_size=30, sampling_rate=100):
+    def render_interactive_grid_replay(self, cell_size=30, sampling_rate=1, auto_screenshot=True):
         """
-        Startet ein interaktives Dashboard mit präzisem Layout und allen Features.
+        Startet das Dashboard. Erstellt automatisch Screenshots, wenn auto_screenshot=True.
         """
         if not self.replay_history:
             print("Keine Replay-Historie zum Anzeigen vorhanden.")
             return
 
         pygame.init()
-        pygame.key.set_repeat(200, 10)
+        pygame.key.set_repeat(200, 35)
 
         grid_shape = self.replay_history[0]["grid"].shape
 
@@ -831,28 +765,27 @@ class Evaluation:
         heatmap_cell_size = 15
         heatmap_height = grid_shape[0] * heatmap_cell_size
         heatmap_width = grid_shape[1] * heatmap_cell_size
+
         colorbar_height = 10
         title_space = 25
         label_space = 20
         spacing_between_heatmaps = 40
         spacing_between_bottom = 10
 
-        left_panel_width = heatmap_width + 50  # 10px Rand + 40px für die Legende
-        left_panel_height = (heatmap_height + colorbar_height + title_space + label_space) * 3 + spacing_between_heatmaps + spacing_between_bottom
+        single_heatmap_block_height = title_space + colorbar_height + label_space + heatmap_height
+        left_panel_height = (single_heatmap_block_height * 2) + spacing_between_heatmaps + spacing_between_bottom
+        left_panel_width = heatmap_width + 50
 
         grid_panel_width = grid_shape[1] * cell_size
         grid_panel_height = grid_shape[0] * cell_size
         right_panel_width = 300
 
         screen_width = left_panel_width + grid_panel_width + right_panel_width
-
-
-        main_content_height = max(left_panel_height, grid_panel_height, 400)  # Mindesthöhe von 400px
+        main_content_height = max(left_panel_height, grid_panel_height, 400)
         info_bar_height = 50
         screen_height = main_content_height + info_bar_height
 
         screen_size = (screen_width, screen_height)
-
         screen = pygame.display.set_mode(screen_size)
         pygame.display.set_caption("Interaktives Analyse-Dashboard")
         font = pygame.font.Font(None, 28)
@@ -867,49 +800,84 @@ class Evaluation:
         panel_y_start = 40
         panel_line_height = 20
 
+        # --- AUTO-SCREENSHOT SETUP ---
+        screenshot_dir = "Ergebnisse/Screenshots"
+        # Definiere die Matches, die du fotografieren willst
+        screenshot_targets_matches = [0, 2000, 4000, 8000, 16000, 32000, 64000, 80000, 100000, 150000, 200000]
+
+        # Liste von Tupeln: (Step-Index, Match-Nummer)
+        target_steps = []
+
+        if auto_screenshot:
+            os.makedirs(screenshot_dir, exist_ok=True)
+            print(f"--- Auto-Screenshot Modus gestartet ---")
+            print(f"Speicherort: {os.path.abspath(screenshot_dir)}")
+
+            max_steps = len(self.replay_history)
+            max_match = (max_steps - 1) * sampling_rate
+
+            for m_target in screenshot_targets_matches:
+                if m_target <= max_match:
+                    # Berechne den Index in der Historie
+                    # Wir nehmen den Index, der dem Ziel am nächsten ist (Runden)
+                    step_idx = int(m_target / sampling_rate)
+                    if step_idx < max_steps:
+                        target_steps.append((step_idx, m_target))
+
+            # Entferne Duplikate und sortiere
+            target_steps = sorted(list(set(target_steps)), key=lambda x: x[0])
+
+            if not target_steps:
+                print("WARNUNG: Keine Screenshots geplant (Simulation war zu kurz für die Ziele?).")
+            else:
+                print(f"Geplante Screenshots (Step, Match): {target_steps}")
+
         while running:
+            # --- 1. AUTO-STEUERUNG (Setze den Schritt VOR dem Zeichnen) ---
+            if auto_screenshot and target_steps:
+                next_target_idx, _ = target_steps[0]
+                current_step = next_target_idx  # Springe hart zum Ziel
+
+            # --- 2. EVENT-HANDLING ---
+            # Holen des Gitters für Scroll-Berechnung
+            current_grid_for_scroll = self.replay_history[current_step]["grid"]
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: running = False
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RIGHT:
-                        current_step = min(current_step + 1, len(self.replay_history) - 1)
-                    elif event.key == pygame.K_LEFT:
-                        current_step = max(current_step - 1, 0)
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 4:
-                        scroll_offset = max(0, scroll_offset - scroll_speed)
-                    elif event.button == 5:  # Mausrad nach unten
-                        # Berechne die maximale Scroll-Position
-                        num_agents = len(grid_to_draw.flatten())
-                        total_content_height = num_agents * panel_line_height
-                        visible_panel_height = screen.get_height() - panel_y_start - info_bar_height
 
-                        # Der maximale Offset ist die Gesamthöhe minus der sichtbaren Höhe
-                        max_scroll = max(0, total_content_height - visible_panel_height)
+                # Manuelle Steuerung nur wenn Auto-Modus aus oder vorbei ist
+                if not auto_screenshot:
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RIGHT:
+                            current_step = min(current_step + 1, len(self.replay_history) - 1)
+                        elif event.key == pygame.K_LEFT:
+                            current_step = max(current_step - 1, 0)
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.button == 4:
+                            scroll_offset = max(0, scroll_offset - scroll_speed)
+                        elif event.button == 5:
+                            num_agents = len(current_grid_for_scroll.flatten())
+                            total_content_height = num_agents * panel_line_height
+                            visible_panel_height = screen.get_height() - panel_y_start - info_bar_height
+                            max_scroll = max(0, total_content_height - visible_panel_height)
+                            scroll_offset = min(scroll_offset + scroll_speed, max_scroll)
 
-                        # Stelle sicher, dass der neue Offset das Maximum nicht überschreitet
-                        scroll_offset = min(scroll_offset + scroll_speed, max_scroll)
-
+            # --- 3. ZEICHNEN ---
             screen.fill((20, 20, 20))
+
             current_data = self.replay_history[current_step]
             grid_to_draw = current_data["grid"]
             active_players = current_data["players"]
             current_epsilon = current_data.get("epsilon", 0.0)
 
-            # --- ZEICHNEN DER 4 PANELS ---
-
-            # Panel 1: Linke Spalte (Heatmaps)
+            # Heatmaps (Links)
             heatmap_x = 10
-
-            # --- Kooperationsrate-Heatmap ---
             coop_heatmap_y = 10
-
             self._draw_horizontal_colorbar(screen, plt.get_cmap('RdYlGn'), heatmap_x, coop_heatmap_y, heatmap_width,
                                            colorbar_height, "Kooperationsrate", "0%", "100%")
             self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
                                coop_heatmap_y + title_space + label_space, 'cooperation_rate', 'RdYlGn')
 
-            # --- Reward-Heatmap ---
             reward_heatmap_y = coop_heatmap_y + heatmap_height + spacing_between_heatmaps + title_space + label_space
 
             min_r, max_r = self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
@@ -917,17 +885,7 @@ class Evaluation:
             self._draw_horizontal_colorbar(screen, plt.get_cmap('RdYlGn'), heatmap_x, reward_heatmap_y, heatmap_width,
                                            colorbar_height, "Total Reward Mean", f"{min_r:.0f}", f"{max_r:.0f}")
 
-            # --- Kooperations-Payoff-Index Heatmap (links unten) ---
-            #payoff_heatmap_y = reward_heatmap_y + heatmap_height + spacing_between_heatmaps + title_space + label_space
-            #min_p, max_p = self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
-            #                                  payoff_heatmap_y + title_space + label_space, 'strategic_cooperation_advantage', 'coolwarm_r')
-            ## Verwendung einer divergierende Colormap von Rot nach Blau
-            #self._draw_horizontal_colorbar(screen, plt.get_cmap('coolwarm_r'), heatmap_x, payoff_heatmap_y,
-            #                               heatmap_width, colorbar_height, "Strateg. Koop.-Vorteil", f"{min_p:.1f}",
-            #                              f"{max_p:.1f}")
-
-
-            # Panel 2: Gitter der Strategietypen (Mitte)
+            # Hauptgitter (Mitte)
             grid_x_start = left_panel_width
             for y in range(grid_shape[0]):
                 for x in range(grid_shape[1]):
@@ -937,7 +895,6 @@ class Evaluation:
                     rect = pygame.Rect(grid_x_start + x * cell_size, y * cell_size, cell_size, cell_size)
                     pygame.draw.rect(screen, color, rect)
                     pygame.draw.rect(screen, (80, 80, 80), rect, 1)
-                    # Agenten-ID zeichnen
                     id_number = str(agent.numeric_id)
                     brightness = (color[0] * 299 + color[1] * 587 + color[2] * 114) / 1000
                     text_color = (0, 0, 0) if brightness > 128 else (255, 255, 255)
@@ -945,26 +902,203 @@ class Evaluation:
                     text_rect = text_surface.get_rect(center=rect.center)
                     screen.blit(text_surface, text_rect)
 
-            # Panel 3: Strategie-Liste (Rechts)
+            # Strategie-Liste (Rechts)
             panel_x_start = left_panel_width + grid_panel_width
             self._draw_strategy_panel(screen, font, grid_to_draw, panel_x_start, scroll_offset)
 
-
             # Info-Leiste (Unten)
-            step_text = f"Match: {current_step * sampling_rate}/{(len(self.replay_history) - 1) * sampling_rate}"
-            player_text = "| Startzustand"
-            if current_step > 0 and active_players[0] is not None:
-                player_text = f"| Aktuelles Duell: {active_players[0]} vs. {active_players[1]}"
+            real_current_match = current_step * sampling_rate
+            real_total_matches = (len(self.replay_history) - 1) * sampling_rate
+            step_text = f"Match: {real_current_match} / {real_total_matches}"
             epsilon_text = f"| Epsilon: {current_epsilon:.4f}"
-            info_text = f"{step_text} {player_text} {epsilon_text}"
-            text_surface = font.render(info_text, True, (255, 255, 255))
-            screen.blit(text_surface, (10, screen_height - 35))
+            player_text = "| Startzustand" if current_step == 0 else f"| Letztes Duell: {active_players[0]} vs. {active_players[1]}"
 
+            info_text = f"{step_text} {epsilon_text} {player_text}"
+            screen.blit(font.render(info_text, True, (255, 255, 255)), (10, screen_height - 35))
+
+            # --- 4. FLIP (Bild sichtbar machen) ---
             pygame.display.flip()
-            clock.tick(30)
+
+            # --- 5. SCREENSHOT SPEICHERN (Nach Flip) ---
+            if auto_screenshot and target_steps:
+                target_idx, target_match = target_steps[0]
+
+                # Wir prüfen hier hart, ob wir beim richtigen Frame sind
+                if current_step == target_idx:
+                    # Kurze Wartezeit für OS/Grafikkarte
+                    pygame.time.wait(100)
+
+                    filename = os.path.join(screenshot_dir, f"snapshot_match_{target_match}.png")
+                    try:
+                        pygame.image.save(screen, filename)
+                        print(f"--> Gespeichert: {filename}")
+                    except Exception as e:
+                        print(f"Fehler beim Speichern: {e}")
+
+                    # Ziel entfernen -> im nächsten Loop-Durchlauf wird das nächste Ziel gesetzt
+                    target_steps.pop(0)
+
+                    if not target_steps:
+                        print("Auto-Modus beendet. Fenster bleibt offen.")
+                        auto_screenshot = False  # Umschalten auf manuell
+
+            clock.tick(30)  # Schnellerer Durchlauf
 
         pygame.key.set_repeat(0)
         pygame.quit()
+
+
+#    def render_interactive_grid_replay(self, cell_size=30, sampling_rate=100):
+#        """
+#        Startet ein interaktives Dashboard mit präzisem Layout und allen Features.
+#        """
+#        if not self.replay_history:
+#            print("Keine Replay-Historie zum Anzeigen vorhanden.")
+#            return
+#
+#        pygame.init()
+#        pygame.key.set_repeat(200, 10)
+#
+#        grid_shape = self.replay_history[0]["grid"].shape
+#
+#        # --- LAYOUT-BERECHNUNG ---
+#        heatmap_cell_size = 15
+#        heatmap_height = grid_shape[0] * heatmap_cell_size
+#        heatmap_width = grid_shape[1] * heatmap_cell_size
+#        colorbar_height = 10
+#        title_space = 25
+#        label_space = 20
+#        spacing_between_heatmaps = 40
+#        spacing_between_bottom = 10
+#
+#        left_panel_width = heatmap_width + 50  # 10px Rand + 40px für die Legende
+#        left_panel_height = (heatmap_height + colorbar_height + title_space + label_space) * 2.1 + spacing_between_heatmaps + spacing_between_bottom
+#
+#        grid_panel_width = grid_shape[1] * cell_size
+#        grid_panel_height = grid_shape[0] * cell_size
+#        right_panel_width = 300
+#
+#        screen_width = left_panel_width + grid_panel_width + right_panel_width
+#
+#
+#        main_content_height = max(left_panel_height, grid_panel_height, 400)  # Mindesthöhe von 400px
+#        info_bar_height = 50
+#        screen_height = main_content_height + info_bar_height
+#
+#        screen_size = (screen_width, screen_height)
+#
+#        screen = pygame.display.set_mode(screen_size)
+#        pygame.display.set_caption("Interaktives Analyse-Dashboard")
+#        font = pygame.font.Font(None, 28)
+#        id_font = pygame.font.Font(None, int(cell_size * 0.6))
+#        clock = pygame.time.Clock()
+#
+#        current_step = 0
+#        running = True
+#        scroll_offset = 0
+#        scroll_speed = 20
+#
+#        panel_y_start = 40
+#        panel_line_height = 20
+#
+#        while running:
+#            for event in pygame.event.get():
+#                if event.type == pygame.QUIT: running = False
+#                if event.type == pygame.KEYDOWN:
+#                    if event.key == pygame.K_RIGHT:
+#                        current_step = min(current_step + 1, len(self.replay_history) - 1)
+#                    elif event.key == pygame.K_LEFT:
+#                        current_step = max(current_step - 1, 0)
+#                if event.type == pygame.MOUSEBUTTONDOWN:
+#                    if event.button == 4:
+#                        scroll_offset = max(0, scroll_offset - scroll_speed)
+#                    elif event.button == 5:  # Mausrad nach unten
+#                        # Berechne die maximale Scroll-Position
+#                        num_agents = len(grid_to_draw.flatten())
+#                        total_content_height = num_agents * panel_line_height
+#                        visible_panel_height = screen.get_height() - panel_y_start - info_bar_height
+#
+#                        # Der maximale Offset ist die Gesamthöhe minus der sichtbaren Höhe
+#                        max_scroll = max(0, total_content_height - visible_panel_height)
+#
+#                        # Stelle sicher, dass der neue Offset das Maximum nicht überschreitet
+#                        scroll_offset = min(scroll_offset + scroll_speed, max_scroll)
+#
+#            screen.fill((20, 20, 20))
+#            current_data = self.replay_history[current_step]
+#            grid_to_draw = current_data["grid"]
+#            active_players = current_data["players"]
+#            current_epsilon = current_data.get("epsilon", 0.0)
+#
+#            # --- ZEICHNEN DER 4 PANELS ---
+#
+#            # Panel 1: Linke Spalte (Heatmaps)
+#            heatmap_x = 10
+#
+#            # --- Kooperationsrate-Heatmap ---
+#            coop_heatmap_y = 10
+#
+#            self._draw_horizontal_colorbar(screen, plt.get_cmap('RdYlGn'), heatmap_x, coop_heatmap_y, heatmap_width,
+#                                           colorbar_height, "Kooperationsrate", "0%", "100%")
+#            self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
+#                               coop_heatmap_y + title_space + label_space, 'cooperation_rate', 'RdYlGn')
+#
+#            # --- Reward-Heatmap ---
+#            reward_heatmap_y = coop_heatmap_y + heatmap_height + spacing_between_heatmaps + title_space + label_space
+#
+#            min_r, max_r = self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
+#                                              reward_heatmap_y + title_space + label_space, 'total_reward_mean', 'RdYlGn')
+#            self._draw_horizontal_colorbar(screen, plt.get_cmap('RdYlGn'), heatmap_x, reward_heatmap_y, heatmap_width,
+#                                           colorbar_height, "Total Reward Mean", f"{min_r:.0f}", f"{max_r:.0f}")
+#
+#            # --- Kooperations-Payoff-Index Heatmap (links unten) ---
+#            #payoff_heatmap_y = reward_heatmap_y + heatmap_height + spacing_between_heatmaps + title_space + label_space
+#            #min_p, max_p = self._draw_heatmap(screen, grid_to_draw, heatmap_cell_size, heatmap_x,
+#            #                                  payoff_heatmap_y + title_space + label_space, 'strategic_cooperation_advantage', 'coolwarm_r')
+#            ## Verwendung einer divergierende Colormap von Rot nach Blau
+#            #self._draw_horizontal_colorbar(screen, plt.get_cmap('coolwarm_r'), heatmap_x, payoff_heatmap_y,
+#            #                               heatmap_width, colorbar_height, "Strateg. Koop.-Vorteil", f"{min_p:.1f}",
+#            #                              f"{max_p:.1f}")
+#
+#
+#            # Panel 2: Gitter der Strategietypen (Mitte)
+#            grid_x_start = left_panel_width
+#            for y in range(grid_shape[0]):
+#                for x in range(grid_shape[1]):
+#                    agent = grid_to_draw[y, x]
+#                    if agent is None: continue
+#                    color = get_agent_color(agent)
+#                    rect = pygame.Rect(grid_x_start + x * cell_size, y * cell_size, cell_size, cell_size)
+#                    pygame.draw.rect(screen, color, rect)
+#                    pygame.draw.rect(screen, (80, 80, 80), rect, 1)
+#                    # Agenten-ID zeichnen
+#                    id_number = str(agent.numeric_id)
+#                    brightness = (color[0] * 299 + color[1] * 587 + color[2] * 114) / 1000
+#                    text_color = (0, 0, 0) if brightness > 128 else (255, 255, 255)
+#                    text_surface = id_font.render(id_number, True, text_color)
+#                    text_rect = text_surface.get_rect(center=rect.center)
+#                    screen.blit(text_surface, text_rect)
+#
+#            # Panel 3: Strategie-Liste (Rechts)
+#            panel_x_start = left_panel_width + grid_panel_width
+#            self._draw_strategy_panel(screen, font, grid_to_draw, panel_x_start, scroll_offset)
+#
+#
+#            # Info-Leiste (Unten)
+#            step_text = f"Match: {current_step * sampling_rate}/{(len(self.replay_history) - 1) * sampling_rate}"
+#            player_text = "| Startzustand"
+#            if current_step > 0 and active_players[0] is not None:
+#                player_text = f"| Aktuelles Duell: {active_players[0]} vs. {active_players[1]}"
+#            epsilon_text = f"| Epsilon: {current_epsilon:.4f}"
+#            info_text = f"{step_text} {player_text} {epsilon_text}"
+#            text_surface = font.render(info_text, True, (255, 255, 255))
+#            screen.blit(text_surface, (10, screen_height - 35))
+#
+#            pygame.display.flip()
+#            clock.tick(30)
+#
+#        pygame.key.set_repeat(0)
+#        pygame.quit()
 
     def _draw_strategy_panel(self, screen, font, grid, panel_x_start, scroll_offset):
         """

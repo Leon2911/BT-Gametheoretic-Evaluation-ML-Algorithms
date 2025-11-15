@@ -18,10 +18,10 @@ from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defec
 LOG_FILE = "simulation_log.md"
 
 simulation_params = {
-    "num_matches": 1000,
+    "num_matches": 200000,
     "num_episodes_per_match": 1,
     "num_rounds_per_episode": 200,
-    "seed": 0
+    "seed": 9
 }
 
 # Definiere die Lern-Hyperparameter für die Protokollierung
@@ -104,7 +104,7 @@ for agent in agent_pool:
 
 # Record the state before any matches have been played (at time t=-1)
 evaluation.record(initial_results, -1)
-sampling_rate = 100
+sampling_rate = 1000
 # === INITIALISIERE MATCHMAKING-SCHEMA ===
 
 # Random pairing scheme
