@@ -573,7 +573,7 @@ class Evaluation:
             for x in range(grid_shape[1]):
                 agent = final_grid[y, x]
                 if agent:
-                    color = get_agent_color(agent)  #
+                    color = get_agent_color(agent)
                     strategy_type_grid[y, x] = color_to_type_map.get(color, "Unknown")
                 else:
                     strategy_type_grid[y, x] = "Empty"

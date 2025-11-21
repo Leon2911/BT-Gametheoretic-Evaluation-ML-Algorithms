@@ -21,7 +21,7 @@ simulation_params = {
     "num_matches": 200000,
     "num_episodes_per_match": 1,
     "num_rounds_per_episode": 200,
-    "seed": 1
+    "seed": 9
 }
 
 # Definiere die Lern-Hyperparameter für die Protokollierung
@@ -108,10 +108,10 @@ sampling_rate = 1000
 # === INITIALISIERE MATCHMAKING-SCHEMA ===
 
 # Random pairing scheme
-#scheme = RandomPairingScheme()
+scheme = RandomPairingScheme()
 
 # Spatial Grid Scheme
-scheme = SpatialGridScheme(neighborhood_type="moore")
+#scheme = SpatialGridScheme(neighborhood_type="moore")
 
 
 evaluation.record_replay_step(grid, active_players=(None, None), current_epsilon=1.0)
@@ -136,8 +136,8 @@ print(f"")
 for match_num in range(num_matches):
 
     # === 1. PAARUNGSPHASE ===
-    #agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool) # RandomPairingScheme takes agent_pool
-    agent_p1, agent_p2 = scheme.choose_agent_pair(grid, match_num) # SpatialGridScheme takes grid
+    agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool) # RandomPairingScheme takes agent_pool
+    #agent_p1, agent_p2 = scheme.choose_agent_pair(grid, match_num) # SpatialGridScheme takes grid
 
     agent_map = {"player_1": agent_p1, "player_2": agent_p2}
 

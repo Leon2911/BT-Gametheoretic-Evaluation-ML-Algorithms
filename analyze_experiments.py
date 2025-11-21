@@ -6,8 +6,10 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from typing import List, Dict, Any
 
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+
 # --- Konfiguration ---
-SIMULATION_DIR = "Ergebnisse/Baseline_Setup/Datacollection"  # Der Ordner, in dem deine .pkl-Dateien liegen
+SIMULATION_DIR = "Ergebnisse/Setup1/Datacollection"  # Der Ordner, in dem deine .pkl-Dateien liegen
 NUM_MATCHES = 200000  # Muss mit deiner Main.py übereinstimmen
 
 
@@ -111,57 +113,111 @@ def aggregate_runs_to_means(all_runs_data: List[Dict]) -> Dict:
 
 # === METHODE 3: FINALES PLOTTEN ===
 
-def plot_final_graphs(aggregated_data: Dict, num_matches: int):
+def plot_final_graphs(aggregated_data: Dict, num_matches: int, num_runs: int):
     """
-    Nimmt das final aggregierte Dictionary und erstellt die Graphen.
+    Erstellt aggregierte Zeitreihen-Graphen mit einem Zoom-Inlay OBEN LINKS.
     """
     all_times = aggregated_data['all_times']
 
-    # --- PLOT 1: Kooperationsrate ---
-    plt.figure(figsize=(12, 7))
-    ax1 = plt.gca()
+    # --- KONFIGURATION ---
+    ZOOM_X_MAX = 5000
+
+    # Position des Inlays (x, y, breite, höhe)
+    # Oben Links (x=0.08, y=0.52)
+    INSET_BOUNDS = [0.1, 0.6, 0.3, 0.3]
+
+    # ==================================================================================
+    # 1. PLOT: Aggregierte Kooperationsrate
+    # ==================================================================================
+    fig1, ax1 = plt.subplots(figsize=(12, 7))
+
+    # Hauptplot
     for agent_type, data in aggregated_data['coop_rates_over_time'].items():
         line, = ax1.plot(all_times, data['mean'], label=f"Typ '{agent_type}'", drawstyle='steps-post')
         ax1.fill_between(all_times, data['mean'] - data['std'], data['mean'] + data['std'],
                          color=line.get_color(), alpha=0.15)
-    ax1.set_title(f"Aggregierte Kooperationsrate (Mittelwert über {len(all_runs_data)} Läufe)")
+
+    ax1.set_title(f"Aggregierte Kooperationsrate (Mittelwert über {num_runs} Läufe)")
     ax1.set_xlabel("Match-Nummer")
     ax1.set_ylabel("Kooperationsrate [%]")
-    ax1.legend(loc='best')
-    ax1.grid(True, linestyle="--")
-    ax1.set_xlim(-1, num_matches)
+
+    # Legende nach rechts unten
+    ax1.legend(loc='lower right')
+
+    ax1.grid(True, linestyle="--", alpha=0.6)
+    ax1.set_xlim(0, num_matches)
     ax1.set_ylim(-5, 105)
+
+    # --- Zoom-Inlay (Oben Links) ---
+    ax1_ins = ax1.inset_axes(INSET_BOUNDS)
+
+    for agent_type, data in aggregated_data['coop_rates_over_time'].items():
+        line, = ax1_ins.plot(all_times, data['mean'], drawstyle='steps-post')
+        ax1_ins.fill_between(all_times, data['mean'] - data['std'], data['mean'] + data['std'],
+                             color=line.get_color(), alpha=0.15)
+
+    ax1_ins.set_xlim(0, ZOOM_X_MAX)
+    ax1_ins.set_ylim(-5, 105)
+    ax1_ins.grid(True, linestyle="--", alpha=0.6)
+    ax1_ins.set_title(f"Zoom: Startphase", fontsize=9)
+
+    # Verbindungslinien: Von den unteren Ecken des Inlays (3 & 4) zum Zoom-Bereich
+    mark_inset(ax1, ax1_ins, loc1=1, loc2=2, fc="none", ec="0.5")
+
     plt.tight_layout()
-    plt.savefig("final_plot_coop_rate.png")
+    plt.savefig("final_plot_coop_rate_inset.png")
     plt.show()
 
-    # --- PLOT 2: Reward ---
-    plt.figure(figsize=(12, 7))
-    ax2 = plt.gca()
+    # ==================================================================================
+    # 2. PLOT: Aggregierter Reward
+    # ==================================================================================
+    fig2, ax2 = plt.subplots(figsize=(12, 7))
+
     for agent_type, data in aggregated_data['rewards_over_time'].items():
         line, = ax2.plot(all_times, data['mean'], label=f"Typ '{agent_type}'", drawstyle='steps-post')
         ax2.fill_between(all_times, data['mean'] - data['std'], data['mean'] + data['std'],
                          color=line.get_color(), alpha=0.15)
-    ax2.set_title(f"Aggregierter kumulativer Reward (Mittelwert über {len(all_runs_data)} Läufe)")
+
+    ax2.set_title(f"Aggregierter kumulativer Reward (Mittelwert über {num_runs} Läufe)")
     ax2.set_xlabel("Match-Nummer")
     ax2.set_ylabel("Total Reward")
-    ax2.legend(loc='best')
-    ax2.grid(True, linestyle="--")
-    ax2.set_xlim(-1, num_matches)
+    ax2.legend(loc='lower right')
+    ax2.grid(True, linestyle="--", alpha=0.6)
+    ax2.set_xlim(0, num_matches)
+
+    # --- Zoom-Inlay ---
+    ax2_ins = ax2.inset_axes(INSET_BOUNDS)
+
+    for agent_type, data in aggregated_data['rewards_over_time'].items():
+        line, = ax2_ins.plot(all_times, data['mean'], drawstyle='steps-post')
+        ax2_ins.fill_between(all_times, data['mean'] - data['std'], data['mean'] + data['std'],
+                             color=line.get_color(), alpha=0.15)
+
+    ax2_ins.set_xlim(0, ZOOM_X_MAX)
+    # Y-Limit automatisch lassen
+    ax2_ins.grid(True, linestyle="--", alpha=0.6)
+    ax2_ins.set_title(f"Zoom: Startphase", fontsize=9)
+
+    mark_inset(ax2, ax2_ins, loc1=1, loc2=2, fc="none", ec="0.5")
+
     plt.tight_layout()
-    plt.savefig("final_plot_reward.png")
+    plt.savefig("final_plot_reward_inset.png")
     plt.show()
 
-    # --- PLOT 3: Strategien ---
+    # ==================================================================================
+    # 3. PLOT: Strategie-Entwicklung
+    # ==================================================================================
     strategy_data = aggregated_data['strategies_over_time']
     num_types = len(strategy_data)
-    fig_strat, axs_strat = plt.subplots(num_types, 1, figsize=(12, 6 * num_types), sharex=True)
+    fig3, axs_strat = plt.subplots(num_types, 1, figsize=(12, 6 * num_types), sharex=True)
     if num_types == 1: axs_strat = [axs_strat]
 
-    labels = ["π(C|CC)", "π(C|CD)", "π(C|DC)", "π(C|DD)"]
+    labels = ["p(C|CC)", "p(C|CD)", "p(C|DC)", "p(C|DD)"]
     style_map = {
-        labels[0]: {'linestyle': '-', 'marker': 'o'}, labels[1]: {'linestyle': '--', 'marker': 's'},
-        labels[2]: {'linestyle': ':', 'marker': '^'}, labels[3]: {'linestyle': '-.', 'marker': 'v'},
+        labels[0]: {'linestyle': '-', 'marker': 'o'},
+        labels[1]: {'linestyle': '--', 'marker': 's'},
+        labels[2]: {'linestyle': ':', 'marker': '^'},
+        labels[3]: {'linestyle': '-.', 'marker': 'v'},
     }
 
     for ax, (agent_type, data) in zip(axs_strat, strategy_data.items()):
@@ -169,22 +225,47 @@ def plot_final_graphs(aggregated_data: Dict, num_matches: int):
             style = style_map[label]
             mean_series = data['mean'][:, i]
             std_series = data['std'][:, i]
+
             line, = ax.plot(all_times, mean_series, label=label,
-                            drawstyle='steps-post', linestyle=style['linestyle'],
-                            marker=style['marker'], markersize=2, markevery=0.2)
+                    drawstyle='steps-post', linestyle=style['linestyle'],
+                    marker=style['marker'], markersize=2, markevery=0.1)
+
             ax.fill_between(all_times, mean_series - std_series, mean_series + std_series,
                             color=line.get_color(), alpha=0.15)
 
-        ax.set_title(f"Aggregierte Strategieentwicklung '{agent_type}' (Mittelwert über {len(all_runs_data)} Läufe)")
-        ax.set_ylabel("Kooperationswahrscheinlichkeit")
-        ax.legend(loc='best')
-        ax.grid(True, linestyle="--")
+        ax.set_title(f"Aggregierte Strategieentwicklung '{agent_type}'")
+        ax.set_ylabel("Kooperations-Wahrscheinlichkeit")
+
+        # Legende nach rechts außen oder unten rechts
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize='large', markerscale=3)
+
+        ax.grid(True, linestyle="--", alpha=0.6)
         ax.set_ylim(-0.05, 1.05)
-        ax.set_xlim(-1, num_matches)
+        ax.set_xlim(0, num_matches)
+
+        # --- Zoom-Inlay ---
+        ax_ins = ax.inset_axes(INSET_BOUNDS)
+
+        for i, label in enumerate(labels):
+            style = style_map[label]
+            mean_series = data['mean'][:, i]
+            std_series = data['std'][:, i]
+            line, = ax_ins.plot(all_times, mean_series,
+                        drawstyle='steps-post', linestyle=style['linestyle'])
+
+            ax_ins.fill_between(all_times, mean_series - std_series, mean_series + std_series,
+                                color=line.get_color(), alpha=0.15)
+
+        ax_ins.set_xlim(0, ZOOM_X_MAX)
+        ax_ins.set_ylim(-0.05, 1.05)
+        ax_ins.grid(True, linestyle="--", alpha=0.6)
+        ax_ins.set_title(f"Zoom: Startphase", fontsize=9)
+
+        mark_inset(ax, ax_ins, loc1=1, loc2=2, fc="none", ec="0.5")
 
     axs_strat[-1].set_xlabel("Match-Nummer")
     plt.tight_layout()
-    plt.savefig("final_plot_strategies.png")
+    plt.savefig("final_plot_strategies_inset.png")
     plt.show()
 
 
@@ -331,7 +412,7 @@ if __name__ == "__main__":
         final_data = aggregate_runs_to_means(all_runs_data)
 
         # 3. Plotten
-        plot_final_graphs(final_data, NUM_MATCHES)
+        plot_final_graphs(final_data, NUM_MATCHES, len(all_runs_data))
 
         # 4. Rohdaten auf Konsole printen
         aggregate_and_print_final_stats(all_runs_data)
