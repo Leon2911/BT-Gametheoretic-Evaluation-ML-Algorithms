@@ -1,27 +1,40 @@
-COOP_CORE_INVASION = [
+layout_map_blank = [
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
-    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL_TFT','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
-    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
-    ['QL', 'QL', 'QL', 'QL','QL', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
-    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
-    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL_TFT','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
 ]
 
-layout_map_coop_start = [
-    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
-    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
-    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
-    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
-    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
-    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
-    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
-    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
-    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
-    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+layout_map_sarsa = [
+    ['SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR'],
+    ['SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR'],
+    ['SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR'],
+    ['SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR'],
+    ['SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR'],
+    ['SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR'],
+    ['SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR'],
+    ['SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR'],
+    ['SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR'],
+    ['SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR', 'SAR'],
+]
+
+layout_map_blank_softmax = [
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
 ]
 
 layout_map_neighbor_visual_moore = [
@@ -51,30 +64,30 @@ layout_map_neighbor_visual_von_neumann = [
     ['AD', 'AD', 'AD', 'AD','AD'],
 ]
 
-layout_map_blank = [
+COOP_CORE_INVASION = [
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
-    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
-    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
-    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
-    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
-    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL_TFT','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL','QL', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL_TFT','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
 ]
 
-layout_map_blank_softmax = [
-    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
-    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
-    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
-    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
-    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
-    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
-    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
-    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
-    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
-    ['QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE','QLE', 'QLE', 'QLE', 'QLE'],
+layout_map_coop_start = [
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
+    ['QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT','QL_TFT', 'QL_TFT', 'QL_TFT', 'QL_TFT'],
 ]
 
 layout_map_defector_invasion = [

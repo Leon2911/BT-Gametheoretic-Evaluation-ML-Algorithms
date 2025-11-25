@@ -748,7 +748,8 @@ class Evaluation:
 # +++++++++++++++++++++++++++++++ RENDERING ++++++++++++++++++++++++++++++++++++++++++++++++
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    def render_interactive_grid_replay(self, cell_size=30, sampling_rate=1, auto_screenshot=True):
+
+    def render_interactive_grid_replay(self, cell_size=30, sampling_rate=1, auto_screenshot=True, auto_close_on_finish=False, screenshot_folder="Ergebnisse/Screenshots"):
         """
         Startet das Dashboard. Erstellt automatisch Screenshots, wenn auto_screenshot=True.
         """
@@ -804,6 +805,8 @@ class Evaluation:
         screenshot_dir = "Ergebnisse/Screenshots"
         # Definiere die Matches, die du fotografieren willst
         screenshot_targets_matches = [0, 2000, 4000, 8000, 16000, 32000, 64000, 80000, 100000, 150000, 200000]
+
+        screenshot_dir = screenshot_folder
 
         # Liste von Tupeln: (Step-Index, Match-Nummer)
         target_steps = []
@@ -939,8 +942,11 @@ class Evaluation:
                     target_steps.pop(0)
 
                     if not target_steps:
-                        print("Auto-Modus beendet. Fenster bleibt offen.")
-                        auto_screenshot = False  # Umschalten auf manuell
+                        print("Alle Screenshots erstellt.")
+                        if auto_close_on_finish:
+                            running = False  # Beendet die Schleife -> Fenster schließt sich
+                        else:
+                            auto_screenshot = False  # Bleibt offen im manuellen Modus
 
             clock.tick(30)  # Schnellerer Durchlauf
 

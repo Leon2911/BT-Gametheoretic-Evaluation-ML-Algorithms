@@ -11,9 +11,9 @@ from Main.IGD_Setup.Action import Action
 
 
 class SARSAAgent(BaseAgent):
-    def __init__(self, n_states=4, n_actions=2, alpha=0.1, gamma=0.95, policy="Epsilon-Greedy", name="SARSAAgent",
-                 temperature=1.0, temperature_decay=0.9995, min_temperature=0.01,
-                 epsilon=1.0, epsilon_decay=0.9995, min_epsilon=0.01, q_table=None):
+    def __init__(self, n_states=4, n_actions=2, alpha=0.05, gamma=0.95, policy="Epsilon-Greedy", name="SARSAAgent",
+                 temperature=1.0, temperature_decay=0.9995, min_temperature=0.001,
+                 epsilon=1.0, epsilon_decay=0.9995, min_epsilon=0.001, q_table=None):
         """
         SARSA Agent with Softmax Policy.
 
@@ -108,10 +108,21 @@ class SARSAAgent(BaseAgent):
 
     def get_policy(self):
         """
-        Returns the current stochastic policy as a matrix:
+        Returns the current policy as a matrix:
         shape = (n_states, n_actions)
         """
-        return np.vstack([self._softmax(self.q_table[s]) for s in range(self.n_states)])
+
+        if self.policy == "Epsilon-Greedy":
+            greedy_policy = np.zeros((self.n_states, self.n_actions))
+            for s in range(self.n_states):
+                # Finde die Aktion(en) mit dem höchsten Q-Wert
+                best_action_indices = np.flatnonzero(self.q_table[s] == np.max(self.q_table[s]))
+                # Wähle zufällig eine der besten Aktionen bei Gleichstand
+                best_action = np.random.choice(best_action_indices)
+                greedy_policy[s, best_action] = 1.0
+            return greedy_policy
+        else:
+            return np.vstack([self._softmax(self.q_table[s]) for s in range(self.n_states)])
 
     def train(self, experience_buffer):
         """Trains the agent with SARSA from an experience buffer"""
@@ -124,6 +135,11 @@ class SARSAAgent(BaseAgent):
 
             self.optimize(obs, action.value, reward, next_obs, next_action.value, done)
 
+            if self.policy == "Epsilon-Greedy":
+                self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
+            else:
+                self.temperature = max(self.min_temperature, self.temperature * self.temperature_decay)
+
         # Handle the last experience
         if experience_buffer:
             obs, action, reward, next_obs, done = experience_buffer[-1]
@@ -134,12 +150,3 @@ class SARSAAgent(BaseAgent):
             self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
         else:
             self.temperature = max(self.min_temperature, self.temperature * self.temperature_decay)
-
-    def get_strategic_cooperation_advantage(self) -> float:
-        """
-        Berechnet den durchschnittlichen Vorteil von Kooperation über alle Zustände
-        basierend auf den gelernten Q-Werten.
-        """
-        # Q-Werte für Kooperation (Spalte 0) - Q-Werte für Defektion (Spalte 1)
-        advantages = self.q_table[:, 0] - self.q_table[:, 1]
-        return np.mean(advantages)

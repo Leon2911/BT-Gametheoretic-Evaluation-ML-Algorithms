@@ -11,7 +11,7 @@ from Main.IGD_Setup.Action import Action
 
 class QLearningAgent(BaseAgent):
     def __init__(self, n_states=4, n_actions=2, alpha=0.05, gamma=0.95, policy="Epsilon-Greedy",
-                 temperature=1.0, temperature_decay=0.9995, min_temperature=0.001,
+                 temperature=50.0, temperature_decay=0.9999, min_temperature=0.1,
                  epsilon=1.0, epsilon_decay=0.9995, min_epsilon=0.001, q_table=None):
         """
         Q-Learning agent with Softmax Policy
@@ -117,6 +117,8 @@ class QLearningAgent(BaseAgent):
                 self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
             else:
                 self.temperature = max(self.min_temperature, self.temperature * self.temperature_decay)
+        #if self.policy == "Softmax":
+        #    self.temperature = max(self.min_temperature, self.temperature * self.temperature_decay)
 
     def get_policy(self):
         """
@@ -135,12 +137,3 @@ class QLearningAgent(BaseAgent):
             return greedy_policy
         else:
             return np.vstack([self._softmax(self.q_table[s]) for s in range(self.n_states)])
-
-    def get_strategic_cooperation_advantage(self) -> float:
-        """
-        Berechnet den durchschnittlichen Vorteil von Kooperation über alle Zustände
-        basierend auf den gelernten Q-Werten.
-        """
-        # Q-Werte für Kooperation (Spalte 0) - Q-Werte für Defektion (Spalte 1)
-        advantages = self.q_table[:, 0] - self.q_table[:, 1]
-        return np.mean(advantages)

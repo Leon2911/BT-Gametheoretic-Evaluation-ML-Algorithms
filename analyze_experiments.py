@@ -9,7 +9,7 @@ from typing import List, Dict, Any
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
 # --- Konfiguration ---
-SIMULATION_DIR = "Ergebnisse/Setup1/Datacollection"  # Der Ordner, in dem deine .pkl-Dateien liegen
+SIMULATION_DIR = "Ergebnisse/DatacollectionHub"  # Der Ordner, in dem deine .pkl-Dateien liegen
 NUM_MATCHES = 200000  # Muss mit deiner Main.py übereinstimmen
 
 
@@ -39,7 +39,7 @@ def get_agent_type_by_id(agent_id: str) -> str:
         return "SARSAAgent"
     if agent_id.startswith("Pure_"):
         return "PureAgent"
-    return "QLearningAgent" # Eigentlich Unknown aber das funkiontiert noch nicht
+    return "SARSA-Agent" # Eigentlich "Unknown" aber das funkiontiert noch nicht
 
 
 def align_time_series(histories: list, all_times: list, num_metrics=1):

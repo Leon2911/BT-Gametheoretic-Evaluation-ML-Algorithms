@@ -34,9 +34,18 @@ def calculate_bounding_boxes(grid_shape):
     # Höhe eines kompletten Blocks (Titel + Legende + Labels + Gitter)
     single_heatmap_block_height = TITLE_SPACE + COLORBAR_HEIGHT + LABEL_SPACE + heatmap_height
 
+    # --- KORREKTUR-OFFSET ---
+    # Wenn das Bild zu tief ist, müssen wir y verringern.
+    # Starte mit -25 Pixeln und passe an, falls nötig.
+    OFFSET_Y_CORRECTION = -10
+
     # --- Box 1: Kooperationsrate (Oben) ---
-    # Die Heatmap selbst beginnt UNTER Titel und Label-Platz
+    # Ursprüngliche Berechnung + Korrektur
     y1_start = HEATMAP_Y_START + TITLE_SPACE + LABEL_SPACE
+
+    # Sicherheitscheck: y darf nicht negativ werden
+    y1_start = max(0, y1_start)
+
     y1_end = y1_start + heatmap_height
     x1_start = HEATMAP_X_START
     x1_end = x1_start + heatmap_width
@@ -44,10 +53,10 @@ def calculate_bounding_boxes(grid_shape):
     box_koop = (x1_start, y1_start, x1_end, y1_end)
 
     # --- Box 2: Reward (Unten) ---
-    # Die zweite Box beginnt nach dem gesamten ersten Block
     reward_heatmap_y_top = HEATMAP_Y_START + single_heatmap_block_height + SPACING_BETWEEN_HEATMAPS
 
-    y2_start = reward_heatmap_y_top + TITLE_SPACE + LABEL_SPACE
+    # Auch hier die Korrektur anwenden
+    y2_start = reward_heatmap_y_top + TITLE_SPACE + LABEL_SPACE + OFFSET_Y_CORRECTION
     y2_end = y2_start + heatmap_height
     x2_start = HEATMAP_X_START
     x2_end = x2_start + heatmap_width
@@ -55,6 +64,38 @@ def calculate_bounding_boxes(grid_shape):
     box_reward = (x2_start, y2_start, x2_end, y2_end)
 
     return box_koop, box_reward
+
+#def calculate_bounding_boxes(grid_shape):
+#    """
+#    Berechnet die exakten Pixel-Boxen für die beiden Heatmaps.
+#    """
+#    heatmap_height = grid_shape[0] * HEATMAP_CELL_SIZE
+#    heatmap_width = grid_shape[1] * HEATMAP_CELL_SIZE
+#
+#    # Höhe eines kompletten Blocks (Titel + Legende + Labels + Gitter)
+#    single_heatmap_block_height = TITLE_SPACE + COLORBAR_HEIGHT + LABEL_SPACE + heatmap_height
+#
+#    # --- Box 1: Kooperationsrate (Oben) ---
+#    # Die Heatmap selbst beginnt UNTER Titel und Label-Platz
+#    y1_start = HEATMAP_Y_START + TITLE_SPACE + LABEL_SPACE
+#    y1_end = y1_start + heatmap_height
+#    x1_start = HEATMAP_X_START
+#    x1_end = x1_start + heatmap_width
+#
+#    box_koop = (x1_start, y1_start, x1_end, y1_end)
+#
+#    # --- Box 2: Reward (Unten) ---
+#    # Die zweite Box beginnt nach dem gesamten ersten Block
+#    reward_heatmap_y_top = HEATMAP_Y_START + single_heatmap_block_height + SPACING_BETWEEN_HEATMAPS
+#
+#    y2_start = reward_heatmap_y_top + TITLE_SPACE + LABEL_SPACE
+#    y2_end = y2_start + heatmap_height
+#    x2_start = HEATMAP_X_START
+#    x2_end = x2_start + heatmap_width
+#
+#    box_reward = (x2_start, y2_start, x2_end, y2_end)
+#
+#    return box_koop, box_reward
 
 
 # --- 3. HAUPTFUNKTION ---

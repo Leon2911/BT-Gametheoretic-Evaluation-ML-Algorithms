@@ -37,7 +37,7 @@ q_table_titfortat = np.array(q_table_titfortat, dtype=float)
 agent_key_map = {
     # Standardeinstellung
     'QL':  {'class': QLearningAgent},
-    'SA':  {'class': SARSAAgent},
+    'SAR':  {'class': SARSAAgent},
     'QLE': {'class': QLearningAgent, 'params': {'policy': "Softmax"}},
 
     # Voreingestellte Q-Learning-Agenten
@@ -45,8 +45,8 @@ agent_key_map = {
     'QL_AD': {'class': QLearningAgent, 'params': {'q_table': q_table_defector}},
 
     # Voreingestellte SARSA-Agenten
-    'SA_TFT': {'class': SARSAAgent, 'params': {'q_table': q_table_titfortat}},
-    'SA_AD': {'class': SARSAAgent, 'params': {'q_table': q_table_defector}},
+    'SAR_TFT': {'class': SARSAAgent, 'params': {'q_table': q_table_titfortat}},
+    'SAR_AD': {'class': SARSAAgent, 'params': {'q_table': q_table_defector}},
 
     # Reine Strategien
     'TFT': {'class': PureAgent, 'params': {'strategy_type': PureStrategy.TITFORTAT}},
@@ -163,10 +163,4 @@ def generate_layout_with_clusters(total_composition: dict, cluster_requests: lis
                 layout[r, c] = remaining_agents.pop()
 
     return layout.tolist()
-
-class GridFactory:
-    """
-    Eine Factory-Klasse, die für die Erstellung und Konfiguration
-    des Agenten-Gitters zuständig ist.
-    """
 

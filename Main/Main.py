@@ -6,11 +6,10 @@ import random
 from Main.Evaluation.Evaluation import Evaluation, log_simulation_parameters, calculate_max_reward, print_results, \
     log_simulation_results
 from Main.IGD_Setup.IPDEnv import IPDEnv
-from Main.Matchmakingschemes.MatchmakingScheme import SpatialGridScheme, calculate_grid_size, RandomPairingScheme
+from Main.Matchmakingschemes.MatchmakingScheme import SpatialGridScheme, RandomPairingScheme
 from Main.SimulationSetup import GridFactory
-from Main.SimulationSetup.LayoutMaps import COOP_CORE_INVASION, layout_map_defector_invasion, layout_map_blank, \
-    layout_map_blank_softmax, layout_map_coop_start, layout_map_neighbor_visual_moore, \
-    layout_map_neighbor_visual_extened_moore, layout_map_neighbor_visual_von_neumann
+from Main.SimulationSetup.LayoutMaps import layout_map_blank, \
+    layout_map_blank_softmax, layout_map_sarsa
 
 # === SIMULATION SETUP ===
 
@@ -31,9 +30,9 @@ learning_params = {
     "epsilon": 1.0,
     "epsilon_decay": 0.9995,
     "min_epsilon": 0.001
-    #"temperature": 1.0,
+    #"temperature": 50.0,
     #"temperature_decay": 0.9995,
-    #"min_temperature": 0.001
+    #"min_temperature": 0.1
 }
 
 num_matches = simulation_params["num_matches"]
@@ -50,36 +49,9 @@ evaluation = Evaluation()
 
 # === INITIALISIERE AGENTENPOOL ===
 
-# 1. Definiere die Gesamt-Zusammensetzung deiner Welt
-total_composition = {
-    'QL': 180,
-    #'QL_TFT': 9, # 18 für die Cluster + 2 extra
-    'AC': 20,
-} # Gesamt: 200 Agenten
-
-# 2. Definiere die "Spezialanweisungen" für die Cluster-Platzierung
-cluster_requests = [
-    #{
-    #    'type': 'QL_TFT', # Agententyp des Clusters
-    #    'count': 1,        # Anzahl der zu erstellenden Cluster dieses Typs
-    #    'neighborhood': 'moore' # (Aktuell wird immer 3x3 platziert, aber gut für die Doku)
-    #},
-    #{
-    #    'type': 'QL_AD',  # Agententyp des Clusters
-    #    'count': 1,  # Anzahl der zu erstellenden Cluster dieses Typs
-    #    'neighborhood': 'moore' # Art der Nachbarschaft
-    #}
-]
-
-#layout_map = GridFactory.generate_layout_with_clusters(total_composition, cluster_requests)
-#layout_map = COOP_CORE_INVASION
-#layout_map = layout_map_defector_invasion
-#layout_map = layout_map_blank_softmax
-#layout_map = layout_map_coop_start
-#layout_map = layout_map_neighbor_visual_von_neumann
-#layout_map = layout_map_neighbor_visual_moore
-#layout_map = layout_map_neighbor_visual_extened_moore
+#layout_map = layout_map_sarsa
 layout_map = layout_map_blank
+#layout_map = layout_map_blank_softmax
 
 grid, agent_pool, agent_counts = GridFactory.create_from_layout(layout_map)
 GRID_SIZE = grid.shape
@@ -108,10 +80,10 @@ sampling_rate = 1000
 # === INITIALISIERE MATCHMAKING-SCHEMA ===
 
 # Random pairing scheme
-scheme = RandomPairingScheme()
+#scheme = RandomPairingScheme()
 
 # Spatial Grid Scheme
-#scheme = SpatialGridScheme(neighborhood_type="moore")
+scheme = SpatialGridScheme(neighborhood_type="von_neumann")
 
 
 evaluation.record_replay_step(grid, active_players=(None, None), current_epsilon=1.0)
@@ -136,8 +108,8 @@ print(f"")
 for match_num in range(num_matches):
 
     # === 1. PAARUNGSPHASE ===
-    agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool) # RandomPairingScheme takes agent_pool
-    #agent_p1, agent_p2 = scheme.choose_agent_pair(grid, match_num) # SpatialGridScheme takes grid
+    #agent_p1, agent_p2 = scheme.choose_agent_pair(agent_pool) # RandomPairingScheme takes agent_pool
+    agent_p1, agent_p2 = scheme.choose_agent_pair(grid, match_num) # SpatialGridScheme takes grid
 
     agent_map = {"player_1": agent_p1, "player_2": agent_p2}
 
@@ -242,10 +214,10 @@ evaluation.plot_aggregated_rewards(agent_pool, num_matches)
 #evaluation.plot_reward_by_coop_category(agent_pool, num_bins=4)
 
 ######### SAVE RESULTS #############################
-OUTPUT_DIR = Path("Ergebnisse/Baseline_Setup/Datacollection")
+OUTPUT_DIR = Path("Ergebnisse/DatacollectionHub")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 output_filename = OUTPUT_DIR / f"run_data_seed_{SEED}.pkl"
 evaluation.save_results(output_filename, cluster_results, final_run_stats)
 #######################################################################
 
-evaluation.render_interactive_grid_replay(cell_size=50, sampling_rate=sampling_rate)
+evaluation.render_interactive_grid_replay(cell_size=50, sampling_rate=sampling_rate, auto_screenshot=True, auto_close_on_finish=True)
