@@ -64,6 +64,34 @@ layout_map_neighbor_visual_von_neumann = [
     ['AD', 'AD', 'AD', 'AD','AD'],
 ]
 
+layout_map_500_QL = [
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+    ['QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL', 'QL'],
+]
+
 COOP_CORE_INVASION = [
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],
     ['QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL','QL', 'QL', 'QL', 'QL'],

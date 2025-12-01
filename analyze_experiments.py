@@ -39,7 +39,7 @@ def get_agent_type_by_id(agent_id: str) -> str:
         return "SARSAAgent"
     if agent_id.startswith("Pure_"):
         return "PureAgent"
-    return "SARSA-Agent" # Eigentlich "Unknown" aber das funkiontiert noch nicht
+    return "Q-Learning-Agent" # Eigentlich "Unknown" aber das funkiontiert noch nicht
 
 
 def align_time_series(histories: list, all_times: list, num_metrics=1):
@@ -268,6 +268,135 @@ def plot_final_graphs(aggregated_data: Dict, num_matches: int, num_runs: int):
     plt.savefig("final_plot_strategies_inset.png")
     plt.show()
 
+
+#def plot_final_graphs(aggregated_data: Dict, num_matches: int, num_runs: int):
+#    """
+#    Erstellt Graphen im "Side-by-Side"-Layout (Links: Zoom, Rechts: Gesamt).
+#    Verhindert Überlappungen und garantiert volle Sichtbarkeit.
+#    """
+#    all_times = aggregated_data['all_times']
+#
+#    # --- KONFIGURATION ---
+#    ZOOM_X_MAX = 5000  # Bis wohin geht der Zoom?
+#
+#    # ==================================================================================
+#    # 1. PLOT: Aggregierte Kooperationsrate (Side-by-Side)
+#    # ==================================================================================
+#    # Wir erstellen 2 Subplots nebeneinander.
+#    # width_ratios=[1, 2] bedeutet: Der rechte Plot ist doppelt so breit wie der linke.
+#    fig1, (ax1_zoom, ax1_main) = plt.subplots(1, 2, figsize=(16, 6), gridspec_kw={'width_ratios': [1, 2]})
+#
+#    # Wir iterieren über beide Achsen und plotten die Daten auf beiden
+#    for ax in (ax1_zoom, ax1_main):
+#        for agent_type, data in aggregated_data['coop_rates_over_time'].items():
+#            line, = ax.plot(all_times, data['mean'], label=f"Typ '{agent_type}'", drawstyle='steps-post')
+#            ax.fill_between(all_times, data['mean'] - data['std'], data['mean'] + data['std'],
+#                            color=line.get_color(), alpha=0.15)
+#        ax.grid(True, linestyle="--", alpha=0.6)
+#        ax.set_ylabel("Kooperationsrate [%]")
+#        ax.set_xlabel("Match-Nummer")
+#        ax.set_ylim(-5, 105)
+#
+#    # --- Linker Plot: Zoom ---
+#    ax1_zoom.set_title(f"Detail: Anfangsphase (0-{ZOOM_X_MAX})")
+#    ax1_zoom.set_xlim(0, ZOOM_X_MAX)
+#    ax1_zoom.legend(loc='best')  # Legende im Zoom, wo meist Platz ist
+#
+#    # --- Rechter Plot: Gesamt ---
+#    ax1_main.set_title(f"Gesamtverlauf (Mittelwert über {num_runs} Läufe)")
+#    ax1_main.set_xlim(0, num_matches)
+#
+#    plt.tight_layout()
+#    plt.savefig("final_plot_coop_rate_split.png")
+#    print("Graph gespeichert: final_plot_coop_rate_split.png")
+#    plt.show()
+#
+#    # ==================================================================================
+#    # 2. PLOT: Aggregierter Reward (Side-by-Side)
+#    # ==================================================================================
+#    fig2, (ax2_zoom, ax2_main) = plt.subplots(1, 2, figsize=(16, 6), gridspec_kw={'width_ratios': [1, 2]})
+#
+#    for ax in (ax2_zoom, ax2_main):
+#        for agent_type, data in aggregated_data['rewards_over_time'].items():
+#            line, = ax.plot(all_times, data['mean'], label=f"Typ '{agent_type}'", drawstyle='steps-post')
+#            ax.fill_between(all_times, data['mean'] - data['std'], data['mean'] + data['std'],
+#                            color=line.get_color(), alpha=0.15)
+#        ax.grid(True, linestyle="--", alpha=0.6)
+#        ax.set_ylabel("Total Reward")
+#        ax.set_xlabel("Match-Nummer")
+#
+#    # Links: Zoom
+#    ax2_zoom.set_title(f"Detail: Anfangsphase (0-{ZOOM_X_MAX})")
+#    ax2_zoom.set_xlim(0, ZOOM_X_MAX)
+#    ax2_zoom.legend(loc='best')
+#
+#    # Rechts: Gesamt
+#    ax2_main.set_title(f"Gesamtverlauf")
+#    ax2_main.set_xlim(0, num_matches)
+#
+#    plt.tight_layout()
+#    plt.savefig("final_plot_reward_split.png")
+#    print("Graph gespeichert: final_plot_reward_split.png")
+#    plt.show()
+#
+#    # ==================================================================================
+#    # 3. PLOT: Strategie-Entwicklung (Side-by-Side pro Typ)
+#    # ==================================================================================
+#    strategy_data = aggregated_data['strategies_over_time']
+#    num_types = len(strategy_data)
+#
+#    labels = ["p(C|CC)", "p(C|CD)", "p(C|DC)", "p(C|DD)"]
+#    style_map = {
+#        labels[0]: {'linestyle': '-', 'marker': 'o'},
+#        labels[1]: {'linestyle': '--', 'marker': 's'},
+#        labels[2]: {'linestyle': ':', 'marker': '^'},
+#        labels[3]: {'linestyle': '-.', 'marker': 'v'},
+#    }
+#
+#    for agent_type, data in strategy_data.items():
+#        # Erstelle für jeden Agententyp eine eigene Abbildung
+#        fig_strat, (ax_z, ax_m) = plt.subplots(1, 2, figsize=(16, 6), gridspec_kw={'width_ratios': [1, 2]})
+#
+#        # Iteriere über beide Achsen (Zoom und Main)
+#        for ax in (ax_z, ax_m):
+#            for i, label in enumerate(labels):
+#                style = style_map[label]
+#                mean_series = data['mean'][:, i]
+#                std_series = data['std'][:, i]  # NEU: Standardabweichung holen
+#
+#                # Marker nur im Zoom (ax_z) oder spärlich im Hauptplot (ax_m)
+#                mark_every = 0.1 if ax == ax_m else 0.05
+#
+#                # Linie zeichnen
+#                line, = ax.plot(all_times, mean_series, label=label,
+#                                drawstyle='steps-post', linestyle=style['linestyle'],
+#                                marker=style['marker'], markersize=3, markevery=mark_every)
+#
+#
+#                ax.fill_between(all_times, mean_series - std_series, mean_series + std_series,
+#                                color=line.get_color(), alpha=0.1)
+#
+#
+#            ax.set_ylabel("Kooperations-Wahrscheinlichkeit")
+#            ax.set_xlabel("Match-Nummer")
+#            ax.grid(True, linestyle="--", alpha=0.6)
+#            ax.set_ylim(-0.05, 1.05)
+#
+#        # Links: Zoom
+#        ax_z.set_title(f"Detail: Anfangsphase (0-{ZOOM_X_MAX})")
+#        ax_z.set_xlim(0, ZOOM_X_MAX)
+#        ax_z.legend(loc='best', fontsize=14, markerscale=2.5)
+#
+#        # Rechts: Gesamt
+#        ax_m.set_title(f"Strategien '{agent_type}': Gesamtverlauf")
+#        ax_m.set_xlim(0, num_matches)
+#
+#        plt.tight_layout()
+#        # Dateiname enthält jetzt den Agententyp
+#        safe_name = agent_type.replace(" ", "_")
+#        plt.savefig(f"final_plot_strategies_{safe_name}_split.png")
+#        print(f"Graph gespeichert: final_plot_strategies_{safe_name}_split.png")
+#        plt.show()
 
 # === METHODE 4 ROHDATEN PRINTEN ===
 

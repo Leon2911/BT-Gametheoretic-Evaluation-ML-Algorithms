@@ -55,7 +55,7 @@ class SpatialGridScheme(MatchmakingScheme):
     Bei jedem Aufruf wird ein zufälliges Nachbarschafts-Duell zurückgegeben.
     """
 
-    def __init__(self, neighborhood_type: str = 'moore'):
+    def __init__(self, neighborhood_type: str = 'extended_moore'):
         """
         Initialisiert das Gitter-Schema.
 
@@ -63,7 +63,7 @@ class SpatialGridScheme(MatchmakingScheme):
             neighborhood_type (str): 'moore' (8 Nachbarn) oder 'von_neumann' (4 Nachbarn).
         """
         if neighborhood_type not in ['moore', 'von_neumann', 'extended_moore']:
-            raise ValueError("neighborhood_type muss 'moore' oder 'von_neumann' sein.")
+            raise ValueError("neighborhood_type muss 'moore', 'von_neumann' 'oder extended_moore' sein.")
         self.neighborhood_type = neighborhood_type
 
         # Interne Liste, um die Duelle einer Generation zu speichern
@@ -74,12 +74,14 @@ class SpatialGridScheme(MatchmakingScheme):
         neighbors = []
         if self.neighborhood_type == 'moore':
             deltas = [(dx, dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if not (dx == 0 and dy == 0)]
-        if self.neighborhood_type == 'von_neumann':
+        elif self.neighborhood_type == 'von_neumann':
             deltas = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-        else:  # extended_moore
+        elif self.neighborhood_type == 'extended_moore':
             deltas = [(dx, dy) for dx in [-1, 0, 1] for dy in [-1, 0, 1] if not (dx == 0 and dy == 0)]
             extended_deltas = [(0, 2), (0, -2), (2, 0), (-2, 0)]
             deltas.extend(extended_deltas)
+        else:
+            raise ValueError(f"Kein unterstützter Nachbarschaftstyp: {self.neighborhood_type}")
 
         for dx, dy in deltas:
             nx, ny = x + dx, y + dy

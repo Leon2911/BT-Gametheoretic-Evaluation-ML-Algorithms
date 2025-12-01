@@ -9,7 +9,7 @@ from Main.IGD_Setup.IPDEnv import IPDEnv
 from Main.Matchmakingschemes.MatchmakingScheme import SpatialGridScheme, RandomPairingScheme
 from Main.SimulationSetup import GridFactory
 from Main.SimulationSetup.LayoutMaps import layout_map_blank, \
-    layout_map_blank_softmax, layout_map_sarsa
+    layout_map_blank_softmax, layout_map_sarsa, layout_map_500_QL
 
 # === SIMULATION SETUP ===
 
@@ -27,12 +27,12 @@ simulation_params = {
 learning_params = {
     "alpha": 0.05,
     "gamma": 0.95,
-    "epsilon": 1.0,
-    "epsilon_decay": 0.9995,
-    "min_epsilon": 0.001
-    #"temperature": 50.0,
-    #"temperature_decay": 0.9995,
-    #"min_temperature": 0.1
+    #"epsilon": 1.0,
+    #"epsilon_decay": 0.9995,
+    #"min_epsilon": 0.001
+    "temperature": 50.0,
+    "temperature_decay": 0.9999,
+    "min_temperature": 0.1
 }
 
 num_matches = simulation_params["num_matches"]
@@ -50,8 +50,9 @@ evaluation = Evaluation()
 # === INITIALISIERE AGENTENPOOL ===
 
 #layout_map = layout_map_sarsa
-layout_map = layout_map_blank
-#layout_map = layout_map_blank_softmax
+#layout_map = layout_map_blank
+#layout_map = layout_map_500_QL
+layout_map = layout_map_blank_softmax
 
 grid, agent_pool, agent_counts = GridFactory.create_from_layout(layout_map)
 GRID_SIZE = grid.shape
@@ -83,7 +84,7 @@ sampling_rate = 1000
 #scheme = RandomPairingScheme()
 
 # Spatial Grid Scheme
-scheme = SpatialGridScheme(neighborhood_type="von_neumann")
+scheme = SpatialGridScheme(neighborhood_type="extended_moore")
 
 
 evaluation.record_replay_step(grid, active_players=(None, None), current_epsilon=1.0)
@@ -207,10 +208,10 @@ else:
 log_simulation_results(LOG_FILE, final_run_stats=final_run_stats,final_cluster_data=cluster_results)
 
 # === VISUALISIERUNG ===
-evaluation.plot_aggregated_strategies(agent_pool, num_matches)
+#evaluation.plot_aggregated_strategies(agent_pool, num_matches)
 #evaluation.plot_strategies(agent_pool, num_matches)
-evaluation.plot_aggregated_coop_rates(agent_pool, num_matches)
-evaluation.plot_aggregated_rewards(agent_pool, num_matches)
+#evaluation.plot_aggregated_coop_rates(agent_pool, num_matches)
+#evaluation.plot_aggregated_rewards(agent_pool, num_matches)
 #evaluation.plot_reward_by_coop_category(agent_pool, num_bins=4)
 
 ######### SAVE RESULTS #############################
@@ -220,4 +221,4 @@ output_filename = OUTPUT_DIR / f"run_data_seed_{SEED}.pkl"
 evaluation.save_results(output_filename, cluster_results, final_run_stats)
 #######################################################################
 
-evaluation.render_interactive_grid_replay(cell_size=50, sampling_rate=sampling_rate, auto_screenshot=True, auto_close_on_finish=True)
+evaluation.render_interactive_grid_replay(cell_size=40, sampling_rate=sampling_rate, auto_screenshot=True, auto_close_on_finish=False)
