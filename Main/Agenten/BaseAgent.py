@@ -110,28 +110,5 @@ class BaseAgent(ABC):
             return 0.0  # Prevents division by zero
         return self.cooperation_count / self.action_count
 
-    def get_cooperation_payoff_index(self) -> float:
-        """
-        Berechnet die Differenz zwischen dem durchschnittlichen Reward bei
-        Kooperation und dem bei Defektion.
-        """
-        coop_count = self.get_cooperation_count()
-        defect_count = self.get_defection_count()
 
-        avg_coop_reward = 0
-        if coop_count > 0:
-            avg_coop_reward = self.reward_from_coop / coop_count
-
-        avg_defect_reward = 0
-        if defect_count > 0:
-            avg_defect_reward = self.reward_from_defect / defect_count
-
-        return avg_coop_reward - avg_defect_reward
-
-    def get_strategic_cooperation_advantage(self) -> float:
-        """
-        Gibt den erlernten strategischen Vorteil von Kooperation zurück.
-        Muss von lernenden Subklassen implementiert werden.
-        """
-        return 0.0 # Standardwert für nicht-lernende Agenten
 
